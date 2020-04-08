@@ -6,12 +6,21 @@ namespace PhobiaX.Assets
 {
     public class AnimatedAsset : IDisposable
     {
+        private readonly string setName;
         private IList<SDLSurface> surfaces = new List<SDLSurface>();
         private int currentFrame = 0;
 
-        public AnimatedAsset(IList<SDLSurface> surfaces)
+        public AnimatedAsset(AnimatedAsset animatedAsset)
         {
-            this.surfaces = surfaces;
+            this.setName = animatedAsset.setName;
+            this.surfaces = animatedAsset.surfaces;
+            this.currentFrame = animatedAsset.currentFrame;
+        }
+
+        public AnimatedAsset(string setName, IList<SDLSurface> surfaces)
+        {
+            this.setName = setName ?? throw new ArgumentNullException(nameof(setName));
+            this.surfaces = surfaces ?? throw new ArgumentNullException(nameof(surfaces));
         }
 
         public void PreviousFrame()
@@ -44,6 +53,11 @@ namespace PhobiaX.Assets
             return currentFrame;
         }
 
+        public void SetFrameIndex(int index)
+        {
+            currentFrame = index;
+        }
+
         public SDLSurface GetCurrentFrame()
         {
             return surfaces[currentFrame];
@@ -52,6 +66,11 @@ namespace PhobiaX.Assets
         public IList<SDLSurface> GetAnimationFrames()
         {
             return surfaces;
+        }
+
+        public string GetSetName()
+        {
+            return setName;
         }
 
         public void Dispose()

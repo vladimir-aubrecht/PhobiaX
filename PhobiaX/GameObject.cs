@@ -13,15 +13,14 @@ namespace PhobiaX
         private int y = 0;
         private int angle = 90;
         private int speed = 5;
-        private readonly AnimatedSurfaceAssets animatedSurfaceAssets;
-        private string framename = "player_neutral";
-        private string neutralFramename = "player_neutral";
+        private readonly AnimatedSet animatedSurfaceAssets;
         private readonly int minimalAngleStep = 1;
+        private bool isStopped = true;
 
-        public GameObject(AnimatedSurfaceAssets animatedSurfaceAssets)
+        public GameObject(AnimatedSet animatedSurfaceAssets)
         {
             this.animatedSurfaceAssets = animatedSurfaceAssets;
-            minimalAngleStep = CircleDegrees / animatedSurfaceAssets.GetAnimationFrames(neutralFramename).Count;
+            minimalAngleStep = CircleDegrees / animatedSurfaceAssets.GetDefaultAnimatedAsset().GetAnimationFrames().Count;
         }
 
         public void MoveToPosition(int x, int y)
@@ -32,67 +31,76 @@ namespace PhobiaX
 
         public void Stop()
         {
-            framename = neutralFramename;
+            isStopped = true;
         }
 
         public void TurnLeft()
         {
-            angle += Modulo(minimalAngleStep, CircleDegrees);
+            angle = Modulo(angle + minimalAngleStep, CircleDegrees);
 
-            animatedSurfaceAssets.NextFrame(neutralFramename);
-            framename = neutralFramename.Replace("_neutral", "_" + animatedSurfaceAssets.GetCurrentFrameIndex(neutralFramename).ToString());
+            (double radians, int rotationFrameIndex) = CalculateMovement();
+
+            animatedSurfaceAssets.GetDefaultAnimatedAsset().SetFrameIndex(rotationFrameIndex);
         }
 
         public void TurnRight()
         {
-            angle -= Modulo(minimalAngleStep, CircleDegrees);
+            angle = Modulo(angle - minimalAngleStep, CircleDegrees);
 
-            animatedSurfaceAssets.PreviousFrame(neutralFramename);
-            framename = neutralFramename.Replace("_neutral", "_" + animatedSurfaceAssets.GetCurrentFrameIndex(neutralFramename).ToString());
+            (double radians, int rotationFrameIndex) = CalculateMovement();
+
+            animatedSurfaceAssets.GetDefaultAnimatedAsset().SetFrameIndex(rotationFrameIndex);
         }
 
         public void MoveForward()
         {
-            (double radians, int frameIndex) = CalculateMovement();
+            (double radians, int rotationFrameIndex) = CalculateMovement();
 
             x -= (int)(speed * Math.Cos(radians));
             y += (int)(speed * Math.Sin(radians));
 
-            framename = neutralFramename.Replace("_neutral", "_" + frameIndex.ToString());
-            animatedSurfaceAssets.PreviousFrame(framename);
+            animatedSurfaceAssets.GetCurrentAnimatedAsset().NextFrame();
+            isStopped = false;
         }
 
         public void MoveBackward()
         {
-            (double radians, int frameIndex) = CalculateMovement();
+            (double radians, int rotationFrameIndex) = CalculateMovement();
 
             x += (int)(speed * Math.Cos(radians));
             y -= (int)(speed * Math.Sin(radians));
 
-            framename = neutralFramename.Replace("_neutral", "_" + frameIndex.ToString());
-            animatedSurfaceAssets.NextFrame(framename);
+            animatedSurfaceAssets.GetCurrentAnimatedAsset().PreviousFrame();
+            isStopped = false;
         }
 
         public void Draw(SDLSurface destination)
         {
-            var objectSurface = animatedSurfaceAssets.GetCurrentFrame(framename);
+            var animatedAsset = animatedSurfaceAssets.GetCurrentAnimatedAsset();
+
+            if (isStopped)
+            {
+                animatedAsset = animatedSurfaceAssets.GetDefaultAnimatedAsset();
+            }
+
+            var objectSurface = animatedAsset.GetCurrentFrame();
             var letterRect = new SDL.SDL_Rect() { x = x, y = y, w = objectSurface.Surface.w, h = objectSurface.Surface.h };
             //image.SetColorKey(48, 255, 0); //numbers
             objectSurface.SetColorKey(2, 65, 17);
             objectSurface.BlitSurface(destination, ref letterRect);
         }
 
-        private (double radians, int frameIndex) CalculateMovement()
+        private (double radians, int rotationFrameIndex) CalculateMovement()
         {
             double animationAngle = Modulo(angle - 90, CircleDegrees);
-            int amountOfAngles = animatedSurfaceAssets.GetAnimationFrames(neutralFramename).Count;
+            int amountOfAngles = animatedSurfaceAssets.GetDefaultAnimatedAsset().GetAnimationFrames().Count;
 
-            int frameIndex = Modulo((int)Math.Ceiling(animationAngle * amountOfAngles / CircleDegrees), amountOfAngles);
-            double radians = (Math.PI / 180) * ((CircleDegrees / amountOfAngles) * (Modulo(frameIndex - amountOfAngles / 4, amountOfAngles)));
+            int rotationFrameIndex = Modulo((int)Math.Ceiling(animationAngle * amountOfAngles / CircleDegrees), amountOfAngles);
+            double radians = (Math.PI / 180) * ((CircleDegrees / amountOfAngles) * (Modulo(rotationFrameIndex - amountOfAngles / 4, amountOfAngles)));
 
-            Console.WriteLine($"index: {frameIndex} from amount: {amountOfAngles} with angle: {angle} and animationAngle: {animationAngle}");
+            Console.WriteLine($"index: {rotationFrameIndex} from amount: {amountOfAngles} with angle: {angle} and animationAngle: {animationAngle}");
 
-            return (radians, frameIndex);
+            return (radians, rotationFrameIndex);
         }
 
         private static int Modulo(int x, int m)

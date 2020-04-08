@@ -11,7 +11,7 @@ namespace PhobiaX
     {
         private readonly SDLRenderer renderer;
         private SurfaceAssets surfaces = new SurfaceAssets();
-        private AnimatedSurfaceAssets animations = new AnimatedSurfaceAssets();
+        private IDictionary<string, AnimatedSet> animations = new Dictionary<string, AnimatedSet>();
 
         public AssetProvider(SDLRenderer renderer)
         {
@@ -21,7 +21,11 @@ namespace PhobiaX
         public void Dispose()
         {
             surfaces.Dispose();
-            animations.Dispose();
+
+            foreach (var animation in animations)
+            {
+                animation.Value.Dispose();
+            }
         }
 
         public void LoadAssets(string resourcesPath)
@@ -66,19 +70,23 @@ namespace PhobiaX
                     surfaces.Add(renderer.LoadSurface(animation));
                 }
 
-                var rootFolderName = Path.GetFileName(resourcesPath);
-                var parentFolderName = Path.GetFileName(Directory.GetParent(animationSet.Key).FullName);
-                var folderName = Path.GetFileName(animationSet.Key);
+                var rootFolderName = Path.GetFileName(resourcesPath).ToLower();
+                var parentFolderName = Path.GetFileName(Directory.GetParent(animationSet.Key).FullName).ToLower();
+                var folderName = Path.GetFileName(animationSet.Key).ToLower();
 
                 if (rootFolderName != parentFolderName)
                 {
-                    animations.AddAnimation($"{parentFolderName.ToLower()}_{folderName.ToLower()}", surfaces);
+                    if (animations.TryGetValue(parentFolderName, out var animatedAssets))
+                    {
+                        animatedAssets.AddAnimation(folderName, surfaces);
+                    }
+                    else
+                    {
+                        var animatedAsset = new AnimatedSet(parentFolderName, "neutral");
+                        animatedAsset.AddAnimation(folderName, surfaces);
+                        animations.Add(parentFolderName, animatedAsset);
+                    }
                 }
-                else
-                {
-                    animations.AddAnimation(folderName.ToLower(), surfaces);
-                }
-
             }
         }
 
@@ -99,7 +107,7 @@ namespace PhobiaX
             return surfaces;
         }
 
-        public AnimatedSurfaceAssets GetAnimatedSurfaces()
+        public IDictionary<string, AnimatedSet> GetAnimatedSurfaces()
         {
             return animations;
         }

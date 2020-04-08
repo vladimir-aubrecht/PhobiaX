@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PhobiaX.Actions;
+using PhobiaX.Assets;
 using PhobiaX.SDL2;
 using PhobiaX.SDL2.Wrappers;
 using SDL2;
@@ -16,7 +17,8 @@ namespace PhobiaX
         private readonly SDLKeyboardStates keyboardProcessor;
         private readonly AssetProvider assetProvider;
         private readonly ActionBinder actionBinder;
-        private GameObject hero;
+        private GameObject hero1;
+        private GameObject hero2;
 
         public Program(SDLApplication application, SDLRenderer renderer, SDLEventProcessor eventProcessor, SDLKeyboardStates keyboardProcessor, AssetProvider assetProvider, ActionBinder actionBinder)
         {
@@ -29,7 +31,11 @@ namespace PhobiaX
 
             assetProvider.LoadAssets("AssetResources");
 
-            hero = new GameObject(assetProvider.GetAnimatedSurfaces());
+            var playerAnimatedSet = assetProvider.GetAnimatedSurfaces()["player"];
+            hero1 = new GameObject(new AnimatedSet(playerAnimatedSet));
+            hero2 = new GameObject(new AnimatedSet(playerAnimatedSet));
+
+            hero2.MoveToPosition(200, 200);
 
             InitKeyboardController();
         }
@@ -37,17 +43,31 @@ namespace PhobiaX
         private void InitKeyboardController()
         {
             actionBinder.AssignKeysToGameAction(GameAction.Quit, false, SDL.SDL_Scancode.SDL_SCANCODE_Q);
-            actionBinder.AssignKeysToGameAction(GameAction.RotateLeft, false, SDL.SDL_Scancode.SDL_SCANCODE_LEFT);
-            actionBinder.AssignKeysToGameAction(GameAction.RotateRight, false, SDL.SDL_Scancode.SDL_SCANCODE_RIGHT);
-            actionBinder.AssignKeysToGameAction(GameAction.MoveForward, false, SDL.SDL_Scancode.SDL_SCANCODE_UP);
-            actionBinder.AssignKeysToGameAction(GameAction.MoveBackward, false, SDL.SDL_Scancode.SDL_SCANCODE_DOWN);
-            actionBinder.AssignKeysToGameAction(GameAction.StopMoving, true, SDL.SDL_Scancode.SDL_SCANCODE_UP, SDL.SDL_Scancode.SDL_SCANCODE_DOWN);
 
-            actionBinder.RegisterPressAction(GameAction.MoveForward, () => hero.MoveForward());
-            actionBinder.RegisterPressAction(GameAction.MoveBackward, () => hero.MoveBackward());
-            actionBinder.RegisterPressAction(GameAction.RotateLeft, () => hero.TurnLeft());
-            actionBinder.RegisterPressAction(GameAction.RotateRight, () => hero.TurnRight());
-            actionBinder.RegisterPressAction(GameAction.StopMoving, () => hero.Stop());
+            actionBinder.AssignKeysToGameAction(GameAction.Player1RotateLeft, false, SDL.SDL_Scancode.SDL_SCANCODE_LEFT);
+            actionBinder.AssignKeysToGameAction(GameAction.Player1RotateRight, false, SDL.SDL_Scancode.SDL_SCANCODE_RIGHT);
+            actionBinder.AssignKeysToGameAction(GameAction.Player1MoveForward, false, SDL.SDL_Scancode.SDL_SCANCODE_UP);
+            actionBinder.AssignKeysToGameAction(GameAction.Player1MoveBackward, false, SDL.SDL_Scancode.SDL_SCANCODE_DOWN);
+            actionBinder.AssignKeysToGameAction(GameAction.Player1StopMoving, true, SDL.SDL_Scancode.SDL_SCANCODE_UP, SDL.SDL_Scancode.SDL_SCANCODE_DOWN);
+
+            actionBinder.AssignKeysToGameAction(GameAction.Player2RotateLeft, false, SDL.SDL_Scancode.SDL_SCANCODE_A);
+            actionBinder.AssignKeysToGameAction(GameAction.Player2RotateRight, false, SDL.SDL_Scancode.SDL_SCANCODE_D);
+            actionBinder.AssignKeysToGameAction(GameAction.Player2MoveForward, false, SDL.SDL_Scancode.SDL_SCANCODE_W);
+            actionBinder.AssignKeysToGameAction(GameAction.Player2MoveBackward, false, SDL.SDL_Scancode.SDL_SCANCODE_S);
+            actionBinder.AssignKeysToGameAction(GameAction.Player2StopMoving, true, SDL.SDL_Scancode.SDL_SCANCODE_W, SDL.SDL_Scancode.SDL_SCANCODE_S);
+
+            actionBinder.RegisterPressAction(GameAction.Player1MoveForward, () => hero1.MoveForward());
+            actionBinder.RegisterPressAction(GameAction.Player1MoveBackward, () => hero1.MoveBackward());
+            actionBinder.RegisterPressAction(GameAction.Player1RotateLeft, () => hero1.TurnLeft());
+            actionBinder.RegisterPressAction(GameAction.Player1RotateRight, () => hero1.TurnRight());
+            actionBinder.RegisterPressAction(GameAction.Player1StopMoving, () => hero1.Stop());
+
+            actionBinder.RegisterPressAction(GameAction.Player2MoveForward, () => hero2.MoveForward());
+            actionBinder.RegisterPressAction(GameAction.Player2MoveBackward, () => hero2.MoveBackward());
+            actionBinder.RegisterPressAction(GameAction.Player2RotateLeft, () => hero2.TurnLeft());
+            actionBinder.RegisterPressAction(GameAction.Player2RotateRight, () => hero2.TurnRight());
+            actionBinder.RegisterPressAction(GameAction.Player2StopMoving, () => hero2.Stop());
+
             actionBinder.RegisterPressAction(GameAction.Quit, () => application.Quit());
         }
 
@@ -71,7 +91,9 @@ namespace PhobiaX
             var finalSurface = renderer.CreateSurface(1024, 768);
             map.BlitScaled(finalSurface, IntPtr.Zero);
 
-            hero.Draw(finalSurface);
+            hero1.Draw(finalSurface);
+
+            hero2.Draw(finalSurface);
 
             renderer.Copy(finalSurface.SurfacePointer, IntPtr.Zero, IntPtr.Zero);
 
