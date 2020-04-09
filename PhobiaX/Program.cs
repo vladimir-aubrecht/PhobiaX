@@ -34,6 +34,7 @@ namespace PhobiaX
             screenSurface = renderer.CreateSurface(1024, 768);
             assetProvider.LoadAssets("AssetResources");
 
+            var effectsAnimatedSet = assetProvider.GetAnimatedSurfaces()["effects"];
             var playerAnimatedSet = assetProvider.GetAnimatedSurfaces()["player"];
             hero1 = new GameObject(new AnimatedSet(playerAnimatedSet));
             hero2 = new GameObject(new AnimatedSet(playerAnimatedSet));

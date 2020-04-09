@@ -29,16 +29,7 @@
         <PackageReference Include="SDL2.Core" Version="2.2.0" />
     </ItemGroup>
     <ItemGroup>
-        <None Update="AssetResources\Environments\*.bmp">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="AssetResources\UI\Letters\*.bmp">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="AssetResources\UI\Numbers\*.bmp">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="AssetResources\Player\*\*.bmp">
+        <None Update="AssetResources\**\*.bmp">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
     </ItemGroup>
