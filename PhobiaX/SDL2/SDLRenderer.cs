@@ -42,6 +42,7 @@ namespace PhobiaX.SDL2
         {
             var texture = sdl2.CreateTextureFromSurface(renderer, surfacePointer);
             sdl2.RenderCopy(renderer, texture, sourceRectangle, destinationRectangle);
+            sdl2.DestroyTexture(texture);
         }
 
         public void Copy(IntPtr surfacePointer, ref SDL.SDL_Rect sourceRectangle, IntPtr destinationRectangle)

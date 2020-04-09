@@ -17,6 +17,8 @@ namespace PhobiaX
         private readonly SDLKeyboardStates keyboardProcessor;
         private readonly AssetProvider assetProvider;
         private readonly ActionBinder actionBinder;
+
+        private SDLSurface screenSurface;
         private GameObject hero1;
         private GameObject hero2;
 
@@ -29,6 +31,7 @@ namespace PhobiaX
             this.assetProvider = assetProvider ?? throw new ArgumentNullException(nameof(assetProvider));
             this.actionBinder = actionBinder ?? throw new ArgumentNullException(nameof(actionBinder));
 
+            screenSurface = renderer.CreateSurface(1024, 768);
             assetProvider.LoadAssets("AssetResources");
 
             var playerAnimatedSet = assetProvider.GetAnimatedSurfaces()["player"];
@@ -86,16 +89,12 @@ namespace PhobiaX
 
             keyboardProcessor.ScanKeys();
 
-            renderer.Clear();
+            map.BlitScaled(screenSurface, IntPtr.Zero);
 
-            var finalSurface = renderer.CreateSurface(1024, 768);
-            map.BlitScaled(finalSurface, IntPtr.Zero);
+            hero1.Draw(screenSurface);
+            hero2.Draw(screenSurface);
 
-            hero1.Draw(finalSurface);
-
-            hero2.Draw(finalSurface);
-
-            renderer.Copy(finalSurface.SurfacePointer, IntPtr.Zero, IntPtr.Zero);
+            renderer.Copy(screenSurface.SurfacePointer, IntPtr.Zero, IntPtr.Zero);
 
             renderer.Present();
             renderer.Delay(20);
