@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PhobiaX.Actions;
@@ -23,7 +26,13 @@ namespace PhobiaX
         private GameObject hero1;
         private GameObject hero2;
 
-        public Program(SDLApplication application, SDLRenderer renderer, SDLEventProcessor eventProcessor, SDLKeyboardStates keyboardProcessor, AssetProvider assetProvider, ActionBinder actionBinder)
+        private IList<GameObject> rockets = new List<GameObject>();
+
+        private bool player1Fire = false;
+        private bool player2Fire = false;
+
+
+        public Program(SDLApplication application, SDLRenderer renderer, SDLEventProcessor eventProcessor, SDLKeyboardStates keyboardProcessor, AssetProvider assetProvider, ActionBinder actionBinder, WindowOptions windowOptions)
         {
             this.application = application ?? throw new ArgumentNullException(nameof(application));
             this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
@@ -32,15 +41,20 @@ namespace PhobiaX
             this.assetProvider = assetProvider ?? throw new ArgumentNullException(nameof(assetProvider));
             this.actionBinder = actionBinder ?? throw new ArgumentNullException(nameof(actionBinder));
 
-            screenSurface = renderer.CreateSurface(1024, 768);
-            assetProvider.LoadAssets("AssetResources");
+            screenSurface = renderer.CreateSurface(windowOptions.Width, windowOptions.Height);
+            assetProvider.LoadSurfaces("AssetResources/UI");
+            assetProvider.LoadSurfaces("AssetResources/Environments");
+            assetProvider.LoadAnimations("AssetResources/Player", "neutral");
+            assetProvider.LoadAnimations("AssetResources/Effects", "rocket");
 
-            var effectsAnimatedSet = assetProvider.GetAnimatedSurfaces()["effects"];
             var playerAnimatedSet = assetProvider.GetAnimatedSurfaces()["player"];
             hero1 = new GameObject(new AnimatedSet(playerAnimatedSet));
             hero2 = new GameObject(new AnimatedSet(playerAnimatedSet));
 
-            hero2.MoveToPosition(200, 200);
+            hero1.X = windowOptions.Width / 3;
+            hero2.X = 2 * windowOptions.Width / 3;
+            hero1.Y = windowOptions.Height / 2;
+            hero2.Y = windowOptions.Height / 2;
 
             InitKeyboardController();
         }
@@ -53,12 +67,14 @@ namespace PhobiaX
             actionBinder.AssignKeysToGameAction(GameAction.Player1RotateRight, false, SDL.SDL_Scancode.SDL_SCANCODE_RIGHT);
             actionBinder.AssignKeysToGameAction(GameAction.Player1MoveForward, false, SDL.SDL_Scancode.SDL_SCANCODE_UP);
             actionBinder.AssignKeysToGameAction(GameAction.Player1MoveBackward, false, SDL.SDL_Scancode.SDL_SCANCODE_DOWN);
+            actionBinder.AssignKeysToGameAction(GameAction.Player1Fire, false, SDL.SDL_Scancode.SDL_SCANCODE_RALT);
             actionBinder.AssignKeysToGameAction(GameAction.Player1StopMoving, true, SDL.SDL_Scancode.SDL_SCANCODE_UP, SDL.SDL_Scancode.SDL_SCANCODE_DOWN);
 
             actionBinder.AssignKeysToGameAction(GameAction.Player2RotateLeft, false, SDL.SDL_Scancode.SDL_SCANCODE_A);
             actionBinder.AssignKeysToGameAction(GameAction.Player2RotateRight, false, SDL.SDL_Scancode.SDL_SCANCODE_D);
             actionBinder.AssignKeysToGameAction(GameAction.Player2MoveForward, false, SDL.SDL_Scancode.SDL_SCANCODE_W);
             actionBinder.AssignKeysToGameAction(GameAction.Player2MoveBackward, false, SDL.SDL_Scancode.SDL_SCANCODE_S);
+            actionBinder.AssignKeysToGameAction(GameAction.Player2Fire, false, SDL.SDL_Scancode.SDL_SCANCODE_LALT);
             actionBinder.AssignKeysToGameAction(GameAction.Player2StopMoving, true, SDL.SDL_Scancode.SDL_SCANCODE_W, SDL.SDL_Scancode.SDL_SCANCODE_S);
 
             actionBinder.RegisterPressAction(GameAction.Player1MoveForward, () => hero1.MoveForward());
@@ -66,12 +82,14 @@ namespace PhobiaX
             actionBinder.RegisterPressAction(GameAction.Player1RotateLeft, () => hero1.TurnLeft());
             actionBinder.RegisterPressAction(GameAction.Player1RotateRight, () => hero1.TurnRight());
             actionBinder.RegisterPressAction(GameAction.Player1StopMoving, () => hero1.Stop());
+            actionBinder.RegisterPressAction(GameAction.Player1Fire, () => player1Fire = true);
 
             actionBinder.RegisterPressAction(GameAction.Player2MoveForward, () => hero2.MoveForward());
             actionBinder.RegisterPressAction(GameAction.Player2MoveBackward, () => hero2.MoveBackward());
             actionBinder.RegisterPressAction(GameAction.Player2RotateLeft, () => hero2.TurnLeft());
             actionBinder.RegisterPressAction(GameAction.Player2RotateRight, () => hero2.TurnRight());
             actionBinder.RegisterPressAction(GameAction.Player2StopMoving, () => hero2.Stop());
+            actionBinder.RegisterPressAction(GameAction.Player2Fire, () => player2Fire = true);
 
             actionBinder.RegisterPressAction(GameAction.Quit, () => application.Quit());
         }
@@ -95,6 +113,23 @@ namespace PhobiaX
 
             hero1.Draw(screenSurface);
             hero2.Draw(screenSurface);
+
+            if (player1Fire)
+            {
+                var effectsAnimatedSet = assetProvider.GetAnimatedSurfaces()["effects"];
+                var rocket = new GameObject(new AnimatedSet(effectsAnimatedSet), true);
+                rocket.X = hero1.X;
+                rocket.Y = hero1.Y;
+                rocket.Angle = hero1.Angle;
+                rockets.Add(rocket);
+                player1Fire = false;
+            }
+
+            foreach (var rocket in rockets)
+            {
+                rocket.MoveForward();
+                rocket.Draw(screenSurface);
+            }
 
             renderer.Copy(screenSurface.SurfacePointer, IntPtr.Zero, IntPtr.Zero);
 

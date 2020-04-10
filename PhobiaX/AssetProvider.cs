@@ -28,13 +28,7 @@ namespace PhobiaX
             }
         }
 
-        public void LoadAssets(string resourcesPath)
-        {
-            LoadSurfaces(resourcesPath);
-            LoadAnimations(resourcesPath);
-        }
-
-        private void LoadAnimations(string resourcesPath)
+        public void LoadAnimations(string resourcesPath, string defaultSetName)
         {
             var map = new Dictionary<string, List<string>>();
             foreach (var file in Directory.EnumerateFiles(resourcesPath, "*.bmp", SearchOption.AllDirectories))
@@ -74,23 +68,20 @@ namespace PhobiaX
                 var parentFolderName = Path.GetFileName(Directory.GetParent(animationSet.Key).FullName).ToLower();
                 var folderName = Path.GetFileName(animationSet.Key).ToLower();
 
-                if (rootFolderName != parentFolderName)
+                if (animations.TryGetValue(parentFolderName, out var animatedAssets))
                 {
-                    if (animations.TryGetValue(parentFolderName, out var animatedAssets))
-                    {
-                        animatedAssets.AddAnimation(folderName, surfaces);
-                    }
-                    else
-                    {
-                        var animatedAsset = new AnimatedSet(parentFolderName, "neutral");
-                        animatedAsset.AddAnimation(folderName, surfaces);
-                        animations.Add(parentFolderName, animatedAsset);
-                    }
+                    animatedAssets.AddAnimation(folderName, surfaces);
+                }
+                else
+                {
+                    var animatedAsset = new AnimatedSet(parentFolderName, defaultSetName);
+                    animatedAsset.AddAnimation(folderName, surfaces);
+                    animations.Add(parentFolderName, animatedAsset);
                 }
             }
         }
 
-        private void LoadSurfaces(string resourcesPath)
+        public void LoadSurfaces(string resourcesPath)
         {
             foreach (var file in Directory.EnumerateFiles(resourcesPath, "*.bmp", SearchOption.AllDirectories))
             {

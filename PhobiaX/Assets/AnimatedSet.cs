@@ -11,6 +11,7 @@ namespace PhobiaX.Assets
         private readonly string defaultSetName;
         private Dictionary<string, AnimatedAsset> animations = new Dictionary<string, AnimatedAsset>();
         private int frameIndex = 0;
+        private bool useOnlyDefaultSetCollection;
 
         public AnimatedSet(AnimatedSet animatedSet)
         {
@@ -18,12 +19,18 @@ namespace PhobiaX.Assets
             this.defaultSetName = animatedSet.defaultSetName;
             this.animations = animatedSet.animations.ToDictionary(k => k.Key, i => new AnimatedAsset(i.Value));
             this.frameIndex = animatedSet.frameIndex;
+            this.useOnlyDefaultSetCollection = animatedSet.useOnlyDefaultSetCollection;
         }
 
-        public AnimatedSet(string collectionName, string defaultSetName)
+        public AnimatedSet(string collectionName, string defaultSetName) : this(collectionName, defaultSetName, false)
+        {
+        }
+
+        public AnimatedSet(string collectionName, string defaultSetName, bool useOnlyDefaultSetCollection)
         {
             this.collectionName = collectionName ?? throw new ArgumentNullException(nameof(collectionName));
             this.defaultSetName = defaultSetName ?? throw new ArgumentNullException(nameof(defaultSetName));
+            this.useOnlyDefaultSetCollection = useOnlyDefaultSetCollection;
         }
 
         public void AddAnimation(string name, IList<SDLSurface> animation)
@@ -69,7 +76,14 @@ namespace PhobiaX.Assets
 
         public AnimatedAsset GetCurrentAnimatedAsset()
         {
-            return animations[animations[defaultSetName].GetCurrentFrameIndex().ToString()];
+            var index = animations[defaultSetName].GetCurrentFrameIndex().ToString();
+
+            if (animations.ContainsKey(index))
+            {
+                return animations[index];
+            }
+
+            return GetDefaultAnimatedAsset();
         }
 
         public AnimatedAsset GetDefaultAnimatedAsset()
