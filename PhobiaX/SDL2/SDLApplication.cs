@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
+using PhobiaX.SDL2.Options;
 using PhobiaX.SDL2.Wrappers;
 using SDL2;
 
@@ -20,19 +21,44 @@ namespace PhobiaX.SDL2
         {
             this.sdl2 = sdl2 ?? throw new ArgumentNullException(nameof(sdl2));
             this.logger = logger;
+
             sdl2.Init();
 
-            logger?.LogDebug("Application started");
+            logger?.LogDebug("Started");
         }
 
-        public SDLWindow CreateWindow(string title, int x, int y, int width, int height, SDL.SDL_WindowFlags windowFlags)
+        public IntPtr CreateWindow(WindowOptions windowOptions)
         {
-            var window = sdl2.CreateWindow(title, x, y, width, height, windowFlags);
-            var sdlWindow = new SDLWindow(sdl2, window);
+            logger?.LogDebug("Creating window");
+
+            var window = sdl2.CreateWindow(windowOptions.Title, windowOptions.X, windowOptions.Y, windowOptions.Width, windowOptions.Height, windowOptions.WindowFlags);
 
             logger?.LogDebug("Window created");
 
-            return sdlWindow;
+            return window;
+        }
+
+        public IntPtr CreateRenderer(SDLWindow window, RendererOptions rendererOptions)
+        {
+            logger?.LogDebug("Creating renderer");
+            var renderer = sdl2.CreateRenderer(window.Handle, rendererOptions.Index, rendererOptions.RendererFlags);
+            logger?.LogDebug("Renderer created");
+
+            return renderer;
+        }
+
+        public void DestroyWindow(SDLWindow window)
+        {
+            logger?.LogDebug("Destroying window");
+            sdl2.DestroyWindow(window.Handle);
+            logger?.LogDebug("Window destroyed");
+        }
+
+        public void DestroyRenderer(SDLRenderer renderer)
+        {
+            logger?.LogDebug("Destroying window");
+            sdl2.DestroyRenderer(renderer.Handle);
+            logger?.LogDebug("Window destroyed");
         }
 
         public void Quit()
@@ -43,8 +69,14 @@ namespace PhobiaX.SDL2
 
         public void Dispose()
         {
+            logger?.LogDebug("Disposing");
             sdl2.Quit();
-            logger?.LogDebug("Disposing ...");
+            logger?.LogDebug("Disposed");
+        }
+
+        public void Delay(uint miliseconds)
+        {
+            sdl2.Delay(miliseconds);
         }
     }
 }

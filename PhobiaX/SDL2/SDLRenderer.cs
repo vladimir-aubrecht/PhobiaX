@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
+using PhobiaX.SDL2.Options;
 using PhobiaX.SDL2.Wrappers;
 using SDL2;
 
@@ -8,12 +10,20 @@ namespace PhobiaX.SDL2
     public class SDLRenderer : IDisposable
     {
         private readonly ISDL2 sdl2;
-        private readonly IntPtr renderer;
+        public IntPtr Handle { get; }
+        private readonly SDLApplication application;
+        private readonly ILogger<SDLRenderer> logger;
 
-        public SDLRenderer(ISDL2 sdl2, IntPtr renderer)
+        public SDLRenderer(ISDL2 sdl2, SDLApplication application, SDLWindow window, RendererOptions rendererOptions) : this(sdl2, application, window, rendererOptions, null)
+        {
+        }
+
+        public SDLRenderer(ISDL2 sdl2, SDLApplication application, SDLWindow window, RendererOptions rendererOptions, ILogger<SDLRenderer> logger)
         {
             this.sdl2 = sdl2 ?? throw new ArgumentNullException(nameof(sdl2));
-            this.renderer = renderer;
+            this.application = application ?? throw new ArgumentNullException(nameof(application));
+            this.logger = logger;
+            this.Handle = this.application.CreateRenderer(window, rendererOptions);
         }
 
         public SDLSurface LoadSurface(string filePath)
@@ -30,42 +40,37 @@ namespace PhobiaX.SDL2
 
         public IntPtr CreateTextureFromSurface(IntPtr surface)
         {
-            return sdl2.CreateTextureFromSurface(renderer, surface);
-        }
-
-        public void Clear()
-        {
-            sdl2.RenderClear(renderer);
+            return sdl2.CreateTextureFromSurface(Handle, surface);
         }
 
         public void Copy(IntPtr surfacePointer, IntPtr sourceRectangle, IntPtr destinationRectangle)
         {
-            var texture = sdl2.CreateTextureFromSurface(renderer, surfacePointer);
-            sdl2.RenderCopy(renderer, texture, sourceRectangle, destinationRectangle);
+            var texture = sdl2.CreateTextureFromSurface(Handle, surfacePointer);
+            sdl2.RenderCopy(Handle, texture, sourceRectangle, destinationRectangle);
             sdl2.DestroyTexture(texture);
         }
 
         public void Copy(IntPtr surfacePointer, ref SDL.SDL_Rect sourceRectangle, IntPtr destinationRectangle)
         {
-            var texture = sdl2.CreateTextureFromSurface(renderer, surfacePointer);
-            sdl2.RenderCopy(renderer, texture, ref sourceRectangle, destinationRectangle);
+            var texture = sdl2.CreateTextureFromSurface(Handle, surfacePointer);
+            sdl2.RenderCopy(Handle, texture, ref sourceRectangle, destinationRectangle);
         }
 
         public void Copy(IntPtr surfacePointer, IntPtr sourceRectangle, ref SDL.SDL_Rect destinationRectangle)
         {
-            var texture = sdl2.CreateTextureFromSurface(renderer, surfacePointer);
-            sdl2.RenderCopy(renderer, texture, sourceRectangle, ref destinationRectangle);
+            var texture = sdl2.CreateTextureFromSurface(Handle, surfacePointer);
+            sdl2.RenderCopy(Handle, texture, sourceRectangle, ref destinationRectangle);
         }
 
         public void Copy(IntPtr surfacePointer, ref SDL.SDL_Rect sourceRectangle, ref SDL.SDL_Rect destinationRectangle)
         {
-            var texture = sdl2.CreateTextureFromSurface(renderer, surfacePointer);
-            sdl2.RenderCopy(renderer, texture, ref sourceRectangle, ref destinationRectangle);
+            var texture = sdl2.CreateTextureFromSurface(Handle, surfacePointer);
+            sdl2.RenderCopy(Handle, texture, ref sourceRectangle, ref destinationRectangle);
         }
 
         public void Present()
         {
-            sdl2.RenderPresent(renderer);
+            sdl2.RenderPresent(Handle);
         }
 
         public int SetColorKey(IntPtr surface, int flag, uint key)
@@ -73,14 +78,9 @@ namespace PhobiaX.SDL2
             return sdl2.SetColorKey(surface, flag, key);
         }
 
-        public void Delay(uint miliseconds)
-        {
-            sdl2.Delay(miliseconds);
-        }
-
         public void Dispose()
         {
-            this.sdl2.DestroyRenderer(renderer);
+            this.application.DestroyRenderer(this);
         }
     }
 }

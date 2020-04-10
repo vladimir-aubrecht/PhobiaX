@@ -1,4 +1,6 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
+using PhobiaX.SDL2.Options;
 using PhobiaX.SDL2.Wrappers;
 using SDL2;
 
@@ -6,24 +8,24 @@ namespace PhobiaX.SDL2
 {
     public class SDLWindow : IDisposable
     {
-        private readonly ISDL2 sdl2;
-        private readonly IntPtr windowIntPtr;
+        private readonly SDLApplication application;
+        private readonly ILogger<SDLWindow> logger;
+        public IntPtr Handle { get; }
 
-        public SDLWindow(ISDL2 sdl2, IntPtr windowIntPtr)
+        public SDLWindow(SDLApplication application, WindowOptions windowOptions) : this(application, windowOptions, null)
         {
-            this.sdl2 = sdl2 ?? throw new ArgumentNullException(nameof(sdl2));
-            this.windowIntPtr = windowIntPtr;
         }
 
-        public SDLRenderer CreateRenderer(int index, SDL.SDL_RendererFlags rendererFlags)
+        public SDLWindow(SDLApplication application, WindowOptions windowOptions, ILogger<SDLWindow> logger)
         {
-            var renderer = sdl2.CreateRenderer(windowIntPtr, index, rendererFlags);
-            return new SDLRenderer(sdl2, renderer);
+            this.application = application ?? throw new ArgumentNullException(nameof(application));
+            this.logger = logger;
+            Handle = application.CreateWindow(windowOptions);
         }
 
         public void Dispose()
         {
-            sdl2.DestroyWindow(windowIntPtr);
+            application.DestroyWindow(this);
         }
     }
 }

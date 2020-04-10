@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using PhobiaX.Actions;
 using PhobiaX.Assets;
 using PhobiaX.SDL2;
+using PhobiaX.SDL2.Options;
 using PhobiaX.SDL2.Wrappers;
 using SDL2;
 
@@ -98,7 +99,7 @@ namespace PhobiaX
             renderer.Copy(screenSurface.SurfacePointer, IntPtr.Zero, IntPtr.Zero);
 
             renderer.Present();
-            renderer.Delay(20);
+            application.Delay(20);
 
             eventProcessor.EvaluateEvents();
         }
@@ -116,6 +117,8 @@ namespace PhobiaX
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddLogging((builder) => builder.AddConsole().SetMinimumLevel(LogLevel.Debug));
+            serviceCollection.AddSingleton((sc) => new WindowOptions { Title = "PhobiaX", X = 0, Y = 0, Width = 1024, Height = 768, WindowFlags = SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL });
+            serviceCollection.AddSingleton((sc) => new RendererOptions { Index = -1, RendererFlags = SDL.SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC | SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED });
 
             serviceCollection.AddSingleton<Program>();
             serviceCollection.AddSingleton<ISDL2, SDL2Wrapper>();
@@ -125,9 +128,8 @@ namespace PhobiaX
             serviceCollection.AddSingleton<SDLKeyboardStates>();
             serviceCollection.AddSingleton<SDLEventProcessor>();
             serviceCollection.AddSingleton<ActionBinder>();
-
-            serviceCollection.AddSingleton((sc) => sc.GetService<SDLApplication>().CreateWindow("PhobiaX", 0, 0, 1024, 768, SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL));
-            serviceCollection.AddSingleton((sc) => sc.GetService<SDLWindow>().CreateRenderer(-1, SDL.SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC | SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED));
+            serviceCollection.AddSingleton<SDLWindow>();
+            serviceCollection.AddSingleton<SDLRenderer>();
 
             return serviceCollection.BuildServiceProvider();
         }

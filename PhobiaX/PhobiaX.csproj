@@ -21,6 +21,7 @@
         <Folder Include="SDL2\Wrappers\" />
         <Folder Include="Assets\" />
         <Folder Include="Actions\" />
+        <Folder Include="SDL2\Options\" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.3" />
