@@ -67,7 +67,7 @@ namespace PhobiaX
             if (!alwaysStopped)
             {
                 animatedSurfaceAssets.GetCurrentAnimatedAsset().NextFrame();
-                isStopped = alwaysStopped | false;
+                isStopped = false;
             }
         }
 
@@ -83,6 +83,24 @@ namespace PhobiaX
                 animatedSurfaceAssets.GetCurrentAnimatedAsset().PreviousFrame();
                 isStopped = false;
             }
+        }
+
+        public bool IsColliding(int x, int y, SDLSurface surface)
+        {
+            var width = surface.Surface.w;
+            var height = surface.Surface.h;
+
+            var isCollissionX = X + width >= x && X <= x + width;
+            var isCollissionY = Y + height >= y && Y <= y + height;
+            var isCollission = isCollissionX && isCollissionY;
+
+            return isCollission;
+        }
+
+        public bool IsColliding(GameObject gameObject)
+        {
+            var animatedAsset = animatedSurfaceAssets.GetCurrentAnimatedAsset();
+            return IsColliding(gameObject.X, gameObject.Y, animatedAsset.GetCurrentFrame());
         }
 
         public void Draw(SDLSurface destination)

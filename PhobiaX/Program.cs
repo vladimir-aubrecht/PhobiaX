@@ -26,6 +26,7 @@ namespace PhobiaX
         private GameObject hero1;
         private GameObject hero2;
 
+        private IList<GameObject> rocketsToDrop = new List<GameObject>();
         private IList<GameObject> rockets = new List<GameObject>();
 
         private bool player1Fire = false;
@@ -127,9 +128,22 @@ namespace PhobiaX
 
             foreach (var rocket in rockets)
             {
+                if (/*rocket.IsColliding(hero1) || */rocket.IsColliding(hero2) || !rocket.IsColliding(0, 0, map))
+                {
+                    rocketsToDrop.Add(rocket);
+                    continue;
+                }
+
                 rocket.MoveForward();
                 rocket.Draw(screenSurface);
             }
+
+            foreach (var rocket in rocketsToDrop)
+            {
+                rockets.Remove(rocket);
+            }
+
+            rocketsToDrop.Clear();
 
             renderer.Copy(screenSurface.SurfacePointer, IntPtr.Zero, IntPtr.Zero);
 
