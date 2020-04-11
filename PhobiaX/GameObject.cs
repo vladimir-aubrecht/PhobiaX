@@ -1,5 +1,7 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Runtime.Versioning;
+using System.Transactions;
 using PhobiaX.Assets;
 using PhobiaX.SDL2;
 using SDL2;
@@ -85,6 +87,40 @@ namespace PhobiaX
             }
         }
 
+        public void MoveTowards(GameObject gameObject)
+        {
+            double xDiff = gameObject.X - this.X;
+            double yDiff = gameObject.Y - this.Y;
+            double xDistance = Math.Abs(xDiff);
+            double yDistance = Math.Abs(yDiff);
+
+            var angle = Modulo(Math.Atan(yDistance / xDistance) * 180 / Math.PI, CircleDegrees);
+
+            // Left Down
+            if (xDiff < 0 && yDiff > 0)
+            {
+                Angle = 180 + angle;
+            }
+            // Right Down
+            else if (xDiff > 0 && yDiff > 0)
+            {
+                Angle = 360 - angle;
+            }
+            // Left Up
+            else if (xDiff < 0 && yDiff < 0)
+            {
+                Angle = 180 - angle;
+            }
+            // Right Up
+            else if (xDiff > 0 && yDiff < 0)
+            {
+                Angle = angle;
+            }
+
+            MoveForward();
+
+        }
+
         public virtual bool IsColliding(int x, int y, SDLSurface surface)
         {
             var thisFrame = this.AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrame();
@@ -117,7 +153,6 @@ namespace PhobiaX
             var objectSurface = animatedAsset.GetCurrentFrame();
             var letterRect = new SDL.SDL_Rect() { x = X, y = Y, w = objectSurface.Surface.w, h = objectSurface.Surface.h };
             //image.SetColorKey(48, 255, 0); //numbers
-            objectSurface.SetColorKey(2, 65, 17);
             objectSurface.BlitSurface(destination, ref letterRect);
         }
 

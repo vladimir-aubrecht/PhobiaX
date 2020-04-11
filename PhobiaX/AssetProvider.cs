@@ -28,7 +28,7 @@ namespace PhobiaX
             }
         }
 
-        public void LoadAnimations(string resourcesPath, string defaultSetName)
+        public void LoadAnimations(string resourcesPath, string defaultSetName, byte r, byte g, byte b)
         {
             var map = new Dictionary<string, List<string>>();
             foreach (var file in Directory.EnumerateFiles(resourcesPath, "*.bmp", SearchOption.AllDirectories))
@@ -61,7 +61,9 @@ namespace PhobiaX
 
                 foreach (var animation in set)
                 {
-                    surfaces.Add(renderer.LoadSurface(animation));
+                    var surface = renderer.LoadSurface(animation);
+                    surface.SetColorKey(r, g, b);
+                    surfaces.Add(surface);
                 }
 
                 var rootFolderName = Path.GetFileName(resourcesPath).ToLower();

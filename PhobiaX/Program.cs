@@ -21,7 +21,7 @@ namespace PhobiaX
         private readonly SDLKeyboardStates keyboardProcessor;
         private readonly AssetProvider assetProvider;
         private readonly ActionBinder actionBinder;
-
+        private readonly EnemyManager enemyManager;
         private SDLSurface screenSurface;
         private GameObject hero1;
         private GameObject hero2;
@@ -43,10 +43,12 @@ namespace PhobiaX
             this.actionBinder = actionBinder ?? throw new ArgumentNullException(nameof(actionBinder));
 
             screenSurface = renderer.CreateSurface(windowOptions.Width, windowOptions.Height);
+
             assetProvider.LoadSurfaces("AssetResources/UI");
             assetProvider.LoadSurfaces("AssetResources/Environments");
-            assetProvider.LoadAnimations("AssetResources/Player", "neutral");
-            assetProvider.LoadAnimations("AssetResources/Effects", "rocket");
+            assetProvider.LoadAnimations("AssetResources/Player", "neutral", 2, 65, 17);
+            assetProvider.LoadAnimations("AssetResources/Aliens", "neutral", 0, 0, 255);
+            assetProvider.LoadAnimations("AssetResources/Effects", "rocket", 2, 65, 17);
 
             var playerAnimatedSet = assetProvider.GetAnimatedSurfaces()["player"];
             hero1 = new GameObject(new AnimatedSet(playerAnimatedSet));
@@ -56,6 +58,8 @@ namespace PhobiaX
             hero2.X = 2 * windowOptions.Width / 3;
             hero1.Y = windowOptions.Height / 2;
             hero2.Y = windowOptions.Height / 2;
+
+            this.enemyManager = new EnemyManager(assetProvider.GetAnimatedSurfaces()["aliens"], windowOptions, hero1, hero2);
 
             InitKeyboardController();
         }
@@ -114,6 +118,8 @@ namespace PhobiaX
 
             hero1.Draw(screenSurface);
             hero2.Draw(screenSurface);
+
+            enemyManager.Draw(screenSurface);
 
             if (player1Fire)
             {

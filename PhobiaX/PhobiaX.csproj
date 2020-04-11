@@ -30,7 +30,19 @@
         <PackageReference Include="SDL2.Core" Version="2.2.0" />
     </ItemGroup>
     <ItemGroup>
-        <None Update="AssetResources\**\*.bmp">
+        <None Update="AssetResources\Aliens\**\*.bmp">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="AssetResources\Effects\**\*.bmp">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="AssetResources\Environments\*.bmp">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="AssetResources\Player\**\*.bmp">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="AssetResources\UI\**\*.bmp">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
     </ItemGroup>
