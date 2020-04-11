@@ -26,8 +26,8 @@ namespace PhobiaX
         private GameObject hero1;
         private GameObject hero2;
 
-        private IList<GameObject> rocketsToDrop = new List<GameObject>();
-        private IList<GameObject> rockets = new List<GameObject>();
+        private IList<EffectGameObject> rocketsToDrop = new List<EffectGameObject>();
+        private IList<EffectGameObject> rockets = new List<EffectGameObject>();
 
         private bool player1Fire = false;
         private bool player2Fire = false;
@@ -118,17 +118,22 @@ namespace PhobiaX
             if (player1Fire)
             {
                 var effectsAnimatedSet = assetProvider.GetAnimatedSurfaces()["effects"];
-                var rocket = new GameObject(new AnimatedSet(effectsAnimatedSet), true);
-                rocket.X = hero1.X;
-                rocket.Y = hero1.Y;
-                rocket.Angle = hero1.Angle;
+                var rocket = new EffectGameObject(new AnimatedSet(effectsAnimatedSet), hero1);
                 rockets.Add(rocket);
                 player1Fire = false;
             }
 
+            if (player2Fire)
+            {
+                var effectsAnimatedSet = assetProvider.GetAnimatedSurfaces()["effects"];
+                var rocket = new EffectGameObject(new AnimatedSet(effectsAnimatedSet), hero2);
+                rockets.Add(rocket);
+                player2Fire = false;
+            }
+
             foreach (var rocket in rockets)
             {
-                if (/*rocket.IsColliding(hero1) || */rocket.IsColliding(hero2) || !rocket.IsColliding(0, 0, map))
+                if (rocket.IsColliding(hero1) || rocket.IsColliding(hero2) || !rocket.IsColliding(0, 0, screenSurface))
                 {
                     rocketsToDrop.Add(rocket);
                     continue;

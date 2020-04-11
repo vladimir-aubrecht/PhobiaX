@@ -8,15 +8,13 @@ namespace PhobiaX.Actions
 {
     public class ActionBinder
     {
-        private readonly SDLApplication application;
         private readonly SDLKeyboardStates keyboardStates;
 
         private Dictionary<GameAction, Action> gameActions = new Dictionary<GameAction, Action>();
         private Dictionary<SDL.SDL_Scancode, bool> pressedKeys = new Dictionary<SDL.SDL_Scancode, bool>();
 
-        public ActionBinder(SDLApplication application, SDLKeyboardStates keyboardStates)
+        public ActionBinder(SDLKeyboardStates keyboardStates)
         {
-            this.application = application ?? throw new ArgumentNullException(nameof(application));
             this.keyboardStates = keyboardStates ?? throw new ArgumentNullException(nameof(keyboardStates));
         }
 
@@ -49,7 +47,6 @@ namespace PhobiaX.Actions
 
                         if (canExecute)
                         {
-                            Console.WriteLine(action);
                             Evaluate(action);
                         }
                     });

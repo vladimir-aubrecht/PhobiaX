@@ -8,18 +8,18 @@ namespace PhobiaX
 {
     public class GameObject
     {
-        private int angle = 90;
-        private const int CircleDegrees = 360;
+        private double angle = 90;
+        private const double CircleDegrees = 360;
         public int X { get; set; } = 0;
         public int Y { get; set; } = 0;
 
         private int speed = 5;
-        private readonly AnimatedSet animatedSurfaceAssets;
+        public AnimatedSet AnimatedSet { get; }
         private readonly bool alwaysStopped;
-        private readonly int minimalAngleStep = 1;
+        private readonly double minimalAngleStep = 1;
         private bool isStopped = true;
 
-        public int Angle
+        public double Angle
         {
             get { return angle; }
             set
@@ -27,7 +27,7 @@ namespace PhobiaX
                 angle = value;
                 (double radians, int rotationFrameIndex) = CalculateMovement();
 
-                animatedSurfaceAssets.GetDefaultAnimatedAsset().SetFrameIndex(rotationFrameIndex);
+                AnimatedSet.GetDefaultAnimatedAsset().SetFrameIndex(rotationFrameIndex);
             }
         }
 
@@ -37,7 +37,7 @@ namespace PhobiaX
 
         public GameObject(AnimatedSet animatedSurfaceAssets, bool alwaysStopped)
         {
-            this.animatedSurfaceAssets = animatedSurfaceAssets;
+            this.AnimatedSet = animatedSurfaceAssets;
             this.alwaysStopped = alwaysStopped;
             minimalAngleStep = CircleDegrees / animatedSurfaceAssets.GetDefaultAnimatedAsset().GetAnimationFrames().Count;
         }
@@ -66,7 +66,7 @@ namespace PhobiaX
 
             if (!alwaysStopped)
             {
-                animatedSurfaceAssets.GetCurrentAnimatedAsset().NextFrame();
+                AnimatedSet.GetCurrentAnimatedAsset().NextFrame();
                 isStopped = false;
             }
         }
@@ -80,18 +80,20 @@ namespace PhobiaX
 
             if (!alwaysStopped)
             {
-                animatedSurfaceAssets.GetCurrentAnimatedAsset().PreviousFrame();
+                AnimatedSet.GetCurrentAnimatedAsset().PreviousFrame();
                 isStopped = false;
             }
         }
 
-        public bool IsColliding(int x, int y, SDLSurface surface)
+        public virtual bool IsColliding(int x, int y, SDLSurface surface)
         {
-            var width = surface.Surface.w;
-            var height = surface.Surface.h;
+            var thisFrame = this.AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrame();
 
-            var isCollissionX = X + width >= x && X <= x + width;
-            var isCollissionY = Y + height >= y && Y <= y + height;
+            var surfaceWidth = surface.Surface.w;
+            var surfaceHeight = surface.Surface.h;
+
+            var isCollissionX = X + thisFrame.Surface.w >= x && X <= x + surfaceWidth;
+            var isCollissionY = Y + thisFrame.Surface.h >= y && Y <= y + surfaceHeight;
             var isCollission = isCollissionX && isCollissionY;
 
             return isCollission;
@@ -99,17 +101,17 @@ namespace PhobiaX
 
         public bool IsColliding(GameObject gameObject)
         {
-            var animatedAsset = animatedSurfaceAssets.GetCurrentAnimatedAsset();
-            return IsColliding(gameObject.X, gameObject.Y, animatedAsset.GetCurrentFrame());
+            var animatedAsset = AnimatedSet.GetCurrentAnimatedAsset();
+            return IsColliding(gameObject.X, gameObject.Y, gameObject.AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrame());
         }
 
         public void Draw(SDLSurface destination)
         {
-            var animatedAsset = animatedSurfaceAssets.GetCurrentAnimatedAsset();
+            var animatedAsset = AnimatedSet.GetCurrentAnimatedAsset();
 
             if (isStopped)
             {
-                animatedAsset = animatedSurfaceAssets.GetDefaultAnimatedAsset();
+                animatedAsset = AnimatedSet.GetDefaultAnimatedAsset();
             }
 
             var objectSurface = animatedAsset.GetCurrentFrame();
@@ -122,9 +124,9 @@ namespace PhobiaX
         private (double radians, int rotationFrameIndex) CalculateMovement()
         {
             double animationAngle = Modulo(Angle - 90, CircleDegrees);
-            int amountOfAngles = animatedSurfaceAssets.GetDefaultAnimatedAsset().GetAnimationFrames().Count;
+            int amountOfAngles = AnimatedSet.GetDefaultAnimatedAsset().GetAnimationFrames().Count;
 
-            int rotationFrameIndex = Modulo((int)Math.Ceiling(animationAngle * amountOfAngles / CircleDegrees), amountOfAngles);
+            int rotationFrameIndex = (int)Modulo(Math.Ceiling(animationAngle * amountOfAngles / CircleDegrees), amountOfAngles);
             double radians = (Math.PI / 180) * ((CircleDegrees / amountOfAngles) * (Modulo(rotationFrameIndex - amountOfAngles / 4, amountOfAngles)));
 
             Console.WriteLine($"index: {rotationFrameIndex} from amount: {amountOfAngles} with angle: {Angle} and animationAngle: {animationAngle}");
@@ -132,7 +134,7 @@ namespace PhobiaX
             return (radians, rotationFrameIndex);
         }
 
-        private static int Modulo(int x, int m)
+        private static double Modulo(double x, double m)
         {
             return (x % m + m) % m;
         }
