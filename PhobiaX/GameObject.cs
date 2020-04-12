@@ -10,8 +10,10 @@ namespace PhobiaX
 {
     public class GameObject
     {
-        private double angle = 90;
+        private const int defaultAngleOffset = 90;
         private const double CircleDegrees = 360;
+
+        private double angle = defaultAngleOffset;
         public int X { get; set; } = 0;
         public int Y { get; set; } = 0;
 
@@ -27,9 +29,8 @@ namespace PhobiaX
             set
             {
                 angle = value;
-                (double radians, int rotationFrameIndex) = CalculateMovement();
 
-                AnimatedSet.GetDefaultAnimatedAsset().SetFrameIndex(rotationFrameIndex);
+                AnimatedSet.GetDefaultAnimatedAsset().SetFrameIndex(CalculateFrameIndexFromCurrentAngle());
             }
         }
 
@@ -61,7 +62,7 @@ namespace PhobiaX
 
         public void MoveForward()
         {
-            (double radians, int rotationFrameIndex) = CalculateMovement();
+            var radians = CalculateNewAngleInRadiansFromFrameIndex();
 
             X -= (int)(speed * Math.Cos(radians));
             Y += (int)(speed * Math.Sin(radians));
@@ -75,7 +76,7 @@ namespace PhobiaX
 
         public void MoveBackward()
         {
-            (double radians, int rotationFrameIndex) = CalculateMovement();
+            var radians = CalculateNewAngleInRadiansFromFrameIndex();
 
             X += (int)(speed * Math.Cos(radians));
             Y -= (int)(speed * Math.Sin(radians));
@@ -89,36 +90,15 @@ namespace PhobiaX
 
         public void MoveTowards(GameObject gameObject)
         {
-            double xDiff = gameObject.X - this.X;
-            double yDiff = gameObject.Y - this.Y;
-            double xDistance = Math.Abs(xDiff);
-            double yDistance = Math.Abs(yDiff);
+            if (this.IsColliding(gameObject))
+            {
+                this.AnimatedSet.GetCurrentAnimatedAsset().ResetFrame();
+                return;
+            }
 
-            var angle = Modulo(Math.Atan(yDistance / xDistance) * 180 / Math.PI, CircleDegrees);
-
-            // Left Down
-            if (xDiff < 0 && yDiff > 0)
-            {
-                Angle = 180 + angle;
-            }
-            // Right Down
-            else if (xDiff > 0 && yDiff > 0)
-            {
-                Angle = 360 - angle;
-            }
-            // Left Up
-            else if (xDiff < 0 && yDiff < 0)
-            {
-                Angle = 180 - angle;
-            }
-            // Right Up
-            else if (xDiff > 0 && yDiff < 0)
-            {
-                Angle = angle;
-            }
+            Angle = CalculateAngleTowardsGameObject(this.X, this.Y, gameObject);
 
             MoveForward();
-
         }
 
         public virtual bool IsColliding(int x, int y, SDLSurface surface)
@@ -156,17 +136,53 @@ namespace PhobiaX
             objectSurface.BlitSurface(destination, ref letterRect);
         }
 
-        private (double radians, int rotationFrameIndex) CalculateMovement()
+        private static double CalculateAngleTowardsGameObject(int x, int y, GameObject gameObject)
         {
-            double animationAngle = Modulo(Angle - 90, CircleDegrees);
+            double xDiff = gameObject.X - x;
+            double yDiff = gameObject.Y - y;
+            double xDistance = Math.Abs(xDiff);
+            double yDistance = Math.Abs(yDiff);
+
+            var angle = Modulo(Math.Atan(yDistance / xDistance) * 180 / Math.PI, CircleDegrees);
+
+            // Left Down
+            if (xDiff < 0 && yDiff > 0)
+            {
+                return 180 + angle;
+            }
+            // Right Down
+            else if (xDiff > 0 && yDiff > 0)
+            {
+                return 360 - angle;
+            }
+            // Left Up
+            else if (xDiff < 0 && yDiff < 0)
+            {
+                return 180 - angle;
+            }
+            // Right Up
+            else if (xDiff > 0 && yDiff < 0)
+            {
+                return angle;
+            }
+
+            return 0;
+        }
+
+        private int CalculateFrameIndexFromCurrentAngle()
+        {
+            double animationAngle = Modulo(Angle - defaultAngleOffset, CircleDegrees);
             int amountOfAngles = AnimatedSet.GetDefaultAnimatedAsset().GetAnimationFrames().Count;
 
-            int rotationFrameIndex = (int)Modulo(Math.Ceiling(animationAngle * amountOfAngles / CircleDegrees), amountOfAngles);
-            double radians = (Math.PI / 180) * ((CircleDegrees / amountOfAngles) * (Modulo(rotationFrameIndex - amountOfAngles / 4, amountOfAngles)));
+            return (int)Modulo(Math.Ceiling(animationAngle * amountOfAngles / CircleDegrees), amountOfAngles);
+        }
 
-            Console.WriteLine($"index: {rotationFrameIndex} from amount: {amountOfAngles} with angle: {Angle} and animationAngle: {animationAngle}");
+        private double CalculateNewAngleInRadiansFromFrameIndex()
+        {
+            var rotationFrameIndex = CalculateFrameIndexFromCurrentAngle();
+            int amountOfAngles = AnimatedSet.GetDefaultAnimatedAsset().GetAnimationFrames().Count;
 
-            return (radians, rotationFrameIndex);
+            return (Math.PI / 180) * ((CircleDegrees / amountOfAngles) * (Modulo(rotationFrameIndex - amountOfAngles / 4, amountOfAngles)));
         }
 
         private static double Modulo(double x, double m)
