@@ -22,8 +22,6 @@ namespace PhobiaX.SDL2
             this.sdl2 = sdl2 ?? throw new ArgumentNullException(nameof(sdl2));
             this.logger = logger;
 
-            sdl2.Init();
-
             logger?.LogDebug("Started");
         }
 

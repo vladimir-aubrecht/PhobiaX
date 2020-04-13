@@ -8,11 +8,16 @@ namespace PhobiaX.SDL2.Wrappers
     {
         IntPtr CreateRenderer(IntPtr window, int index, SDL.SDL_RendererFlags rendererFlags);
         IntPtr CreateWindow(string title, int x, int y, int width, int height, SDL.SDL_WindowFlags windowFlags);
+        SDL_AudioSpec LoadWAV(string file, ref SDL_AudioSpec spec, out IntPtr audio_buf, out uint audio_len);
+        int OpenAudio(ref SDL_AudioSpec desired, out SDL_AudioSpec obtained);
+        void PauseAudio(int pause_on);
+        void CloseAudio();
+        void FreeWAV(IntPtr audio_buf);
         void DestroyRenderer(IntPtr renderer);
         void DestroyTexture(IntPtr texture);
         void DestroyWindow(IntPtr window);
         void FreeSurface(IntPtr surface);
-        void Init();
+        void Init(uint flags);
         int PollEvent(out SDL.SDL_Event @event);
         void Quit();
         void RenderClear(IntPtr renderer);

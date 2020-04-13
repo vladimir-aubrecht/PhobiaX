@@ -20,12 +20,37 @@ namespace PhobiaX.SDL2.Wrappers
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public void Init()
+        public void Init(uint flags)
         {
-            if (SDL.SDL_Init(SDL.SDL_INIT_VIDEO) < 0)
+            if (SDL.SDL_Init(flags) < 0)
             {
                 CreateError(nameof(Init));
             }
+        }
+
+        public SDL_AudioSpec LoadWAV(string file, ref SDL_AudioSpec spec, out IntPtr audio_buf, out uint audio_len)
+        {
+            return SDL.SDL_LoadWAV(file, ref spec, out audio_buf, out audio_len);
+        }
+
+        public int OpenAudio(ref SDL_AudioSpec desired, out SDL_AudioSpec obtained)
+        {
+            return SDL.SDL_OpenAudio(ref desired, out obtained);
+        }
+
+        public void PauseAudio(int pause_on)
+        {
+            SDL.SDL_PauseAudio(pause_on);
+        }
+
+        public void CloseAudio()
+        {
+            SDL.SDL_CloseAudio();
+        }
+
+        public void FreeWAV(IntPtr audio_buf)
+        {
+            SDL.SDL_FreeWAV(audio_buf);
         }
 
         public IntPtr CreateWindow(string title, int x, int y, int width, int height, SDL.SDL_WindowFlags windowFlags)

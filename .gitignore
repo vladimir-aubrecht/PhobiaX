@@ -2,3 +2,5 @@
 .vs/**
 **/bin/**
 **/obj/**
+/PhobiaX/PhobiaX.csproj.user
+/PhobiaX/Properties/PublishProfiles

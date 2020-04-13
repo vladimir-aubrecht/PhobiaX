@@ -24,6 +24,8 @@ namespace PhobiaX.SDL2
             this.application = application ?? throw new ArgumentNullException(nameof(application));
             this.logger = logger;
             this.Handle = this.application.CreateRenderer(window, rendererOptions);
+
+            sdl2.Init(SDL.SDL_INIT_VIDEO);
         }
 
         public SDLSurface LoadSurface(string filePath)
