@@ -11,9 +11,13 @@ namespace PhobiaX.GameObjects
 
 		public int Y { get; }
 
+		public bool CanBeHit { get; }
+
 		SDLSurface CurrentSurface { get; }
 
 		bool IsColliding(IGameObject gameObject);
+
+		public void Hit();
 
 		void Draw(SDLSurface destination);
 	}

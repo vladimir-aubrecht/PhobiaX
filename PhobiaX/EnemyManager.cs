@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using PhobiaX.Assets;
 using PhobiaX.GameObjects;
 using PhobiaX.SDL2;
@@ -64,6 +65,11 @@ namespace PhobiaX
             }
         }
 
+        public IList<IGameObject> GetAllEnemies()
+        {
+            return enemies.Cast<IGameObject>().ToList();
+        }
+
         public void MoveToClosestTarget(int probabilityOfNoMove, int percentageOfEnemiesWhichMustMove)
         {
             int movesInTurn = 0;
@@ -98,7 +104,7 @@ namespace PhobiaX
             var isColliding = false;
             foreach (var enemy in enemies)
             {
-                if (testedEnemy == enemy)
+                if (testedEnemy == enemy || !enemy.CanBeHit)
                 {
                     continue;
                 }
@@ -112,9 +118,10 @@ namespace PhobiaX
         private AnimatedGameObject FindClosestTarget(AnimatedGameObject enemy)
         {
             var closestDistance = double.MaxValue;
-            var closesestTarget = targets[random.Next(targets.Length)];
+            var livingTargets = targets.Where(i => i.CanBeHit).ToArray();
+            var closesestTarget = livingTargets[random.Next(livingTargets.Length)];
 
-            foreach (var target in targets)
+            foreach (var target in livingTargets)
             {
                 var xDiff = target.X - enemy.X;
                 var yDiff = target.Y - enemy.Y;

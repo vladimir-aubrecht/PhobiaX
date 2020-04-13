@@ -30,7 +30,7 @@ namespace PhobiaX.GameObjects
 			}
 		}
 
-		public void EvaluateRockets(IGameObject map, params IGameObject[] gameObjects)
+		public void EvaluateRockets(IGameObject map, IList<IGameObject> gameObjects)
 		{
 			foreach (var rocket in rockets)
 			{
@@ -41,8 +41,9 @@ namespace PhobiaX.GameObjects
 
 				foreach (var gameObject in gameObjects)
 				{
-					if (rocket.IsColliding(gameObject))
+					if (gameObject.CanBeHit && rocket.IsColliding(gameObject))
 					{
+						gameObject.Hit();
 						rocketsToDrop.Add(rocket);
 					}
 				}
@@ -58,13 +59,13 @@ namespace PhobiaX.GameObjects
 
 		public override void Draw(SDLSurface destination)
 		{
+			base.Draw(destination);
+
 			foreach (var rocket in rockets)
 			{
 				rocket.MoveForward();
 				rocket.Draw(destination);
 			}
-
-			base.Draw(destination);
 		}
 	}
 }

@@ -41,9 +41,9 @@ namespace PhobiaX
 
             assetProvider.LoadSurfaces("AssetResources/UI");
             assetProvider.LoadSurfaces("AssetResources/Environments");
-            assetProvider.LoadAnimations("AssetResources/Player", "neutral", 2, 65, 17);
-            assetProvider.LoadAnimations("AssetResources/Aliens", "neutral", 0, 0, 255);
-            assetProvider.LoadAnimations("AssetResources/Effects", "rocket", 2, 65, 17);
+            assetProvider.LoadAnimations("AssetResources/Player", "neutral", "death", 2, 65, 17);
+            assetProvider.LoadAnimations("AssetResources/Aliens", "neutral", "death", 0, 0, 255);
+            assetProvider.LoadAnimations("AssetResources/Effects", "rocket", "explosion", 2, 65, 17);
 
             var playerAnimatedSet = assetProvider.GetAnimatedSurfaces()["player"];
             var effectsAnimatedSet = assetProvider.GetAnimatedSurfaces()["effects"];
@@ -113,13 +113,17 @@ namespace PhobiaX
         {
             keyboardProcessor.ScanKeys();
 
-            hero1.EvaluateRockets(map, hero2);
-            hero2.EvaluateRockets(map, hero1);
+            var enemies = new List<IGameObject>(enemyManager.GetAllEnemies());
+            enemies.Add(hero1);
+            enemies.Add(hero2);
+
+            hero1.EvaluateRockets(map, enemies);
+            hero2.EvaluateRockets(map, enemies);
 
             map.Draw(screenSurface);
+            enemyManager.Draw(screenSurface);
             hero1.Draw(screenSurface);
             hero2.Draw(screenSurface);
-            enemyManager.Draw(screenSurface);
 
             renderer.Copy(screenSurface.SurfacePointer, IntPtr.Zero, IntPtr.Zero);
 

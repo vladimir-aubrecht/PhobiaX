@@ -9,6 +9,7 @@ namespace PhobiaX.Assets
     {
         private readonly string collectionName;
         private readonly string defaultSetName;
+        private readonly string finalSetName;
         private Dictionary<string, AnimatedAsset> animations = new Dictionary<string, AnimatedAsset>();
         private int frameIndex = 0;
         private bool useOnlyDefaultSetCollection;
@@ -17,19 +18,21 @@ namespace PhobiaX.Assets
         {
             this.collectionName = animatedSet.collectionName;
             this.defaultSetName = animatedSet.defaultSetName;
+            this.finalSetName = animatedSet.finalSetName;
             this.animations = animatedSet.animations.ToDictionary(k => k.Key, i => new AnimatedAsset(i.Value));
             this.frameIndex = animatedSet.frameIndex;
             this.useOnlyDefaultSetCollection = animatedSet.useOnlyDefaultSetCollection;
         }
 
-        public AnimatedSet(string collectionName, string defaultSetName) : this(collectionName, defaultSetName, false)
+        public AnimatedSet(string collectionName, string defaultSetName, string finalSetName) : this(collectionName, defaultSetName, finalSetName, false)
         {
         }
 
-        public AnimatedSet(string collectionName, string defaultSetName, bool useOnlyDefaultSetCollection)
+        public AnimatedSet(string collectionName, string defaultSetName, string finalSetName, bool useOnlyDefaultSetCollection)
         {
             this.collectionName = collectionName ?? throw new ArgumentNullException(nameof(collectionName));
             this.defaultSetName = defaultSetName ?? throw new ArgumentNullException(nameof(defaultSetName));
+            this.finalSetName = finalSetName ?? throw new ArgumentNullException(nameof(finalSetName));
             this.useOnlyDefaultSetCollection = useOnlyDefaultSetCollection;
         }
 
@@ -89,6 +92,11 @@ namespace PhobiaX.Assets
         public AnimatedAsset GetDefaultAnimatedAsset()
         {
             return animations[defaultSetName];
+        }
+
+        public AnimatedAsset GetFinalAnimatedAsset()
+        {
+            return animations[finalSetName];
         }
 
         public AnimatedAsset GetAnimatedAsset(string name)

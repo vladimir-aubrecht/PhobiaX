@@ -12,6 +12,8 @@ namespace PhobiaX.GameObjects
 		public int Y { get; }
 		public SDLSurface CurrentSurface { get; }
 
+		public bool CanBeHit { get; } = false;
+
 		public StaticGameObject(int x, int y, SDLSurface surface)
 		{
 			X = x;
@@ -31,6 +33,11 @@ namespace PhobiaX.GameObjects
 			var isYCollission = gameObject.Y + gameObject.CurrentSurface.Surface.h >= Y && gameObject.Y <= Y + CurrentSurface.Surface.h;
 
 			return isXCollission && isYCollission;
+		}
+
+		public void Hit()
+		{
+			
 		}
 	}
 }

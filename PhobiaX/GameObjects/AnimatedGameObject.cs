@@ -27,7 +27,9 @@ namespace PhobiaX.GameObjects
 
         public SDLSurface CurrentSurface => AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrame();
 
-        private readonly bool alwaysStopped;
+        private bool isHit = false;
+
+        private bool alwaysStopped;
         private readonly double minimalAngleStep = 1;
         private bool isStopped = true;
 
@@ -41,6 +43,8 @@ namespace PhobiaX.GameObjects
                 AnimatedSet.GetDefaultAnimatedAsset().SetFrameIndex(CalculateFrameIndexFromCurrentAngle());
             }
         }
+
+        public bool CanBeHit => !isHit;
 
         public AnimatedGameObject(AnimatedSet animatedSurfaceAssets) : this(animatedSurfaceAssets, false)
         {
@@ -70,6 +74,11 @@ namespace PhobiaX.GameObjects
 
         public void MoveForward()
         {
+            if (isHit)
+            {
+                return;
+            }
+
             var radians = CalculateNewAngleInRadiansFromFrameIndex();
 
             BackupCurrentPosition();
@@ -86,6 +95,11 @@ namespace PhobiaX.GameObjects
 
         public void MoveBackward()
         {
+            if (isHit)
+            {
+                return;
+            }
+
             var radians = CalculateNewAngleInRadiansFromFrameIndex();
 
             BackupCurrentPosition();
@@ -157,6 +171,11 @@ namespace PhobiaX.GameObjects
                 animatedAsset = AnimatedSet.GetDefaultAnimatedAsset();
             }
 
+            if (isHit)
+            {
+                animatedAsset = AnimatedSet.GetFinalAnimatedAsset();
+            }
+
             var objectSurface = animatedAsset.GetCurrentFrame();
             var surfaceRectangle = new SDL.SDL_Rect() { x = X, y = Y, w = objectSurface.Surface.w, h = objectSurface.Surface.h };
             //image.SetColorKey(48, 255, 0); //numbers
@@ -215,6 +234,11 @@ namespace PhobiaX.GameObjects
         private static double Modulo(double x, double m)
         {
             return (x % m + m) % m;
+        }
+
+        public void Hit()
+        {
+            isHit = true;
         }
     }
 }
