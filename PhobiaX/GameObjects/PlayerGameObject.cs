@@ -16,13 +16,18 @@ namespace PhobiaX.GameObjects
 		public int Score { get; private set; } = 0;
 		public int Life { get; private set; } = 100;
 
-		public PlayerGameObject(AnimatedSet playerAnimatedSet, AnimatedSet effectsAnimatedSet) : base(playerAnimatedSet, false)
+		public PlayerGameObject(AnimatedSet playerAnimatedSet, AnimatedSet effectsAnimatedSet) : base(playerAnimatedSet, false, 0)
 		{
 			this.effectsAnimatedSet = effectsAnimatedSet ?? throw new ArgumentNullException(nameof(effectsAnimatedSet));
 		}
 
 		public void Shoot()
 		{
+			if (!CanBeHit)
+			{
+				return;
+			}
+			
 			var rocket = new EffectGameObject(new AnimatedSet(effectsAnimatedSet), this);
 
 			if ((DateTimeOffset.UtcNow - lastShoot).TotalMilliseconds > 300)

@@ -160,6 +160,8 @@ namespace PhobiaX
             hero1.EvaluateRockets(map, enemies);
             hero2.EvaluateRockets(map, enemies);
 
+            enemyManager.MoveEnemies();
+
             map.Draw(screenSurface);
             enemyManager.Draw(screenSurface);
             hero1.Draw(screenSurface);

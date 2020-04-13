@@ -30,8 +30,11 @@ namespace PhobiaX.GameObjects
         private bool isHit = false;
 
         private bool alwaysStopped;
+        private readonly int minimumMsForMove;
         private readonly double minimalAngleStep = 1;
         private bool isStopped = true;
+
+        private DateTimeOffset lastMovement = DateTimeOffset.MinValue;
 
         public double Angle
         {
@@ -46,14 +49,15 @@ namespace PhobiaX.GameObjects
 
         public bool CanBeHit => !isHit;
 
-        public AnimatedGameObject(AnimatedSet animatedSurfaceAssets) : this(animatedSurfaceAssets, false)
+        public AnimatedGameObject(AnimatedSet animatedSurfaceAssets, int minimumMsForMove) : this(animatedSurfaceAssets, false, minimumMsForMove)
         {
         }
 
-        public AnimatedGameObject(AnimatedSet animatedSurfaceAssets, bool alwaysStopped)
+        public AnimatedGameObject(AnimatedSet animatedSurfaceAssets, bool alwaysStopped, int minimumMsForMove)
         {
             this.AnimatedSet = animatedSurfaceAssets;
             this.alwaysStopped = alwaysStopped;
+            this.minimumMsForMove = minimumMsForMove;
             minimalAngleStep = CircleDegrees / animatedSurfaceAssets.GetDefaultAnimatedAsset().GetAnimationFrames().Count;
         }
 
@@ -79,6 +83,11 @@ namespace PhobiaX.GameObjects
                 return;
             }
 
+            if ((DateTimeOffset.UtcNow - lastMovement).TotalMilliseconds < minimumMsForMove)
+            {
+                return;
+            }
+
             var radians = CalculateNewAngleInRadiansFromFrameIndex();
 
             BackupCurrentPosition();
@@ -90,12 +99,19 @@ namespace PhobiaX.GameObjects
             {
                 AnimatedSet.GetCurrentAnimatedAsset().NextFrame();
                 isStopped = false;
+
+                lastMovement = DateTimeOffset.UtcNow;
             }
         }
 
         public void MoveBackward()
         {
             if (isHit)
+            {
+                return;
+            }
+
+            if ((DateTimeOffset.UtcNow - lastMovement).TotalMilliseconds < minimumMsForMove)
             {
                 return;
             }
@@ -111,6 +127,8 @@ namespace PhobiaX.GameObjects
             {
                 AnimatedSet.GetCurrentAnimatedAsset().PreviousFrame();
                 isStopped = false;
+
+                lastMovement = DateTimeOffset.UtcNow;
             }
         }
 
@@ -130,17 +148,18 @@ namespace PhobiaX.GameObjects
             this.AnimatedSet.GetCurrentAnimatedAsset().SetFrameIndex(previousFrameIndex);
         }
 
-        public void MoveTowards(AnimatedGameObject gameObject)
+        public bool TryMoveTowards(AnimatedGameObject gameObject)
         {
             if (this.IsColliding(gameObject))
             {
                 this.AnimatedSet.GetCurrentAnimatedAsset().ResetFrame();
-                return;
+                return false;
             }
 
             Angle = CalculateAngleTowardsGameObject(this.X, this.Y, gameObject);
 
             MoveForward();
+            return true;
         }
 
         public virtual bool IsColliding(int x, int y, SDLSurface surface)

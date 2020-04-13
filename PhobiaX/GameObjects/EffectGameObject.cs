@@ -8,7 +8,7 @@ namespace PhobiaX.GameObjects
     {
         private readonly AnimatedGameObject gameObject;
 
-        public EffectGameObject(AnimatedSet animatedSet, AnimatedGameObject gameObject) : base(animatedSet, true)
+        public EffectGameObject(AnimatedSet animatedSet, AnimatedGameObject gameObject) : base(animatedSet, true, 0)
         {
             this.gameObject = gameObject ?? throw new ArgumentNullException(nameof(gameObject));
 

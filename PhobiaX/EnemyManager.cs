@@ -30,7 +30,7 @@ namespace PhobiaX
         {
             for (int i = 0; i < amount; i++)
             {
-                var enemy = new AnimatedGameObject(new AnimatedSet(animatedSet));
+                var enemy = new AnimatedGameObject(new AnimatedSet(animatedSet), 100);
 
                 var x = random.Next(windowOptions.Width);
                 var y = random.Next(windowOptions.Height);
@@ -84,13 +84,21 @@ namespace PhobiaX
 
                 var closesestTarget = FindClosestTarget(enemy);
 
+                if (closesestTarget == null)
+                {
+                    return;
+                }
+
                 movesInTurn++;
 
                 var originalX = enemy.X;
                 var originalY = enemy.Y;
                 var originalAngle = enemy.Angle;
 
-                enemy.MoveTowards(closesestTarget);
+                if (!enemy.TryMoveTowards(closesestTarget))
+                {
+                    closesestTarget.Hit();
+                }
 
                 if (HasEnemyCollissionWithRestOfEnemies(enemy))
                 {
@@ -119,6 +127,12 @@ namespace PhobiaX
         {
             var closestDistance = double.MaxValue;
             var livingTargets = targets.Where(i => i.CanBeHit).ToArray();
+
+            if (livingTargets.Length == 0)
+            {
+                return null;
+            }
+
             var closesestTarget = livingTargets[random.Next(livingTargets.Length)];
 
             foreach (var target in livingTargets)
@@ -138,10 +152,13 @@ namespace PhobiaX
             return closesestTarget;
         }
 
-        public void Draw(SDLSurface surface)
+        public void MoveEnemies()
         {
             MoveToClosestTarget(70, 20);
+        }
 
+        public void Draw(SDLSurface surface)
+        {
             foreach (var enemy in enemies)
             {
                 enemy.Draw(surface);

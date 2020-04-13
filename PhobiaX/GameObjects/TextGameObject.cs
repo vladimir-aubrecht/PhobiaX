@@ -63,24 +63,26 @@ namespace PhobiaX.GameObjects
 				height = Math.Max(height, surface.Surface.h);
 			}
 
-			var textSurface = renderer.CreateSurface(width, height);
-
-			int x = 0;
-			foreach (var symbol in text)
+			using (var textSurface = renderer.CreateSurface(width, height))
 			{
-				if (symbol == ' ')
+				int x = 0;
+				foreach (var symbol in text)
 				{
-					x += symbolSurfaces.First().Value.Surface.w;
-					continue;
+					if (symbol == ' ')
+					{
+						x += symbolSurfaces.First().Value.Surface.w;
+						continue;
+					}
+
+					var surface = symbolSurfaces[symbol];
+					var surfaceRectangle = new SDL.SDL_Rect() { x = x, y = 0, w = surface.Surface.w, h = surface.Surface.h };
+					surface.BlitSurface(textSurface, ref surfaceRectangle);
+					x += surface.Surface.w;
 				}
 
-				var surface = symbolSurfaces[symbol];
-				var surfaceRectangle = new SDL.SDL_Rect() { x = x, y = 0, w = surface.Surface.w, h = surface.Surface.h };
-				surface.BlitSurface(textSurface, ref surfaceRectangle);
-				x += surface.Surface.w;
+				CurrentSurface?.Dispose();
+				CurrentSurface = renderer.CreateResizedSurface(textSurface, maxWidth);
 			}
-
-			CurrentSurface = renderer.CreateResizedSurface(textSurface, maxWidth);
 		}
 	}
 }
