@@ -22,7 +22,7 @@ namespace PhobiaX.GameObjects
         private double previousAngle = 0;
         private int previousFrameIndex = 0;
 
-        private int speed = 5;
+        public int Speed { get; set; } = 4;
         private AnimatedSet AnimatedSet { get; }
 
         public SDLSurface CurrentSurface => AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrame();
@@ -33,6 +33,8 @@ namespace PhobiaX.GameObjects
         private readonly int minimumMsForMove;
         private readonly double minimalAngleStep = 1;
         private bool isStopped = true;
+        public bool IsFinalAnimationFinished => isHit && (!AnimatedSet.IsFinalSetAnimation || AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrameIndex() == AnimatedSet.GetCurrentAnimatedAsset().GetAnimationFrames().Count - 1);
+
 
         private DateTimeOffset lastMovement = DateTimeOffset.MinValue;
 
@@ -92,8 +94,8 @@ namespace PhobiaX.GameObjects
 
             BackupCurrentPosition();
 
-            X -= (int)(speed * Math.Cos(radians));
-            Y += (int)(speed * Math.Sin(radians));
+            X -= (int)(Speed * Math.Cos(radians));
+            Y += (int)(Speed * Math.Sin(radians));
 
             if (!alwaysStopped)
             {
@@ -120,8 +122,8 @@ namespace PhobiaX.GameObjects
 
             BackupCurrentPosition();
 
-            X += (int)(speed * Math.Cos(radians));
-            Y -= (int)(speed * Math.Sin(radians));
+            X += (int)(Speed * Math.Cos(radians));
+            Y -= (int)(Speed * Math.Sin(radians));
 
             if (!alwaysStopped)
             {
@@ -193,11 +195,18 @@ namespace PhobiaX.GameObjects
             if (isHit)
             {
                 animatedAsset = AnimatedSet.GetFinalAnimatedAsset();
+
+                if (AnimatedSet.IsFinalSetAnimation)
+                {
+                    if (animatedAsset.GetCurrentFrameIndex() != animatedAsset.GetAnimationFrames().Count - 1)
+                    {
+                        animatedAsset.NextFrame();
+                    }
+                }
             }
 
             var objectSurface = animatedAsset.GetCurrentFrame();
             var surfaceRectangle = new SDL.SDL_Rect() { x = X, y = Y, w = objectSurface.Surface.w, h = objectSurface.Surface.h };
-            //image.SetColorKey(48, 255, 0); //numbers
             objectSurface.BlitSurface(destination, ref surfaceRectangle);
         }
 

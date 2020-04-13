@@ -47,9 +47,9 @@ namespace PhobiaX
             assetProvider.LoadSurfaces("AssetResources/UI/Bars", new SDLColor(255, 255, 255));
             assetProvider.LoadSurfaces("AssetResources/UI/Symbols", new SDLColor(48, 255, 0), new SDLColor(49, 255, 0));
             assetProvider.LoadSurfaces("AssetResources/Environments", new SDLColor(255, 255, 255));
-            assetProvider.LoadAnimations("AssetResources/Player", "neutral", "death", new SDLColor(2, 65, 17), new SDLColor(2, 66, 17), new SDLColor(2, 66, 18));
-            assetProvider.LoadAnimations("AssetResources/Aliens", "neutral", "death", new SDLColor(0, 0, 255), new SDLColor(18, 18, 242));
-            assetProvider.LoadAnimations("AssetResources/Effects", "rocket", "explosion", new SDLColor(2, 65, 17), new SDLColor(2, 66, 17), new SDLColor(2, 66, 18));
+            assetProvider.LoadAnimations("AssetResources/Player", "neutral", "death", false, new SDLColor(2, 65, 17), new SDLColor(2, 66, 17), new SDLColor(2, 66, 18));
+            assetProvider.LoadAnimations("AssetResources/Aliens", "neutral", "death", false, new SDLColor(0, 0, 255), new SDLColor(18, 18, 242));
+            assetProvider.LoadAnimations("AssetResources/Effects", "rocket", "explosion", true, new SDLColor(2, 65, 17), new SDLColor(2, 66, 17), new SDLColor(2, 66, 18), new SDLColor(0, 112, 5), new SDLColor(0, 111, 5), new SDLColor(16, 107, 7), new SDLColor(5, 110, 6), new SDLColor(4, 110, 5), new SDLColor(21, 105, 7));
 
             var playerAnimatedSet = assetProvider.GetAnimatedSurfaces()["player"];
             var effectsAnimatedSet = assetProvider.GetAnimatedSurfaces()["effects"];
@@ -146,6 +146,9 @@ namespace PhobiaX
         private void DoGameLoop()
         {
             keyboardProcessor.ScanKeys();
+
+            var totalScore = (hero1.Score + hero2.Score);
+            enemyManager.SetDesiredAmountOfEnemies(8 + totalScore / 10);
 
             var enemies = new List<IGameObject>(enemyManager.GetAllEnemies());
             enemies.Add(hero1);

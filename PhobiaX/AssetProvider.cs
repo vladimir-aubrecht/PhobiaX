@@ -28,7 +28,7 @@ namespace PhobiaX
             }
         }
 
-        public void LoadAnimations(string resourcesPath, string defaultSetName, string finalSetName, params SDLColor[] transparencyColors)
+        public void LoadAnimations(string resourcesPath, string defaultSetName, string finalSetName, bool isFinalSetAnimation, params SDLColor[] transparencyColors)
         {
             var map = new Dictionary<string, List<string>>();
             foreach (var file in Directory.EnumerateFiles(resourcesPath, "*.bmp", SearchOption.AllDirectories))
@@ -79,7 +79,7 @@ namespace PhobiaX
                 }
                 else
                 {
-                    var animatedAsset = new AnimatedSet(parentFolderName, defaultSetName, finalSetName);
+                    var animatedAsset = new AnimatedSet(parentFolderName, defaultSetName, finalSetName, isFinalSetAnimation);
                     animatedAsset.AddAnimation(folderName, surfaces);
                     animations.Add(parentFolderName, animatedAsset);
                 }

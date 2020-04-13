@@ -14,6 +14,8 @@ namespace PhobiaX.Assets
         private int frameIndex = 0;
         private bool useOnlyDefaultSetCollection;
 
+        public bool IsFinalSetAnimation { get; }
+
         public AnimatedSet(AnimatedSet animatedSet)
         {
             this.collectionName = animatedSet.collectionName;
@@ -22,18 +24,20 @@ namespace PhobiaX.Assets
             this.animations = animatedSet.animations.ToDictionary(k => k.Key, i => new AnimatedAsset(i.Value));
             this.frameIndex = animatedSet.frameIndex;
             this.useOnlyDefaultSetCollection = animatedSet.useOnlyDefaultSetCollection;
+            this.IsFinalSetAnimation = animatedSet.IsFinalSetAnimation;
         }
 
-        public AnimatedSet(string collectionName, string defaultSetName, string finalSetName) : this(collectionName, defaultSetName, finalSetName, false)
+        public AnimatedSet(string collectionName, string defaultSetName, string finalSetName, bool isFinalSetAnimation) : this(collectionName, defaultSetName, finalSetName, false, isFinalSetAnimation)
         {
         }
 
-        public AnimatedSet(string collectionName, string defaultSetName, string finalSetName, bool useOnlyDefaultSetCollection)
+        public AnimatedSet(string collectionName, string defaultSetName, string finalSetName, bool useOnlyDefaultSetCollection, bool isFinalSetAnimation)
         {
             this.collectionName = collectionName ?? throw new ArgumentNullException(nameof(collectionName));
             this.defaultSetName = defaultSetName ?? throw new ArgumentNullException(nameof(defaultSetName));
             this.finalSetName = finalSetName ?? throw new ArgumentNullException(nameof(finalSetName));
             this.useOnlyDefaultSetCollection = useOnlyDefaultSetCollection;
+            IsFinalSetAnimation = isFinalSetAnimation;
         }
 
         public void AddAnimation(string name, IList<SDLSurface> animation)

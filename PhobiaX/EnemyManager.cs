@@ -15,6 +15,8 @@ namespace PhobiaX
         private readonly AnimatedGameObject[] targets;
         private readonly IList<AnimatedGameObject> enemies = new List<AnimatedGameObject>();
         private readonly Random random = new Random();
+        private DateTimeOffset lastEnemyCleanup = DateTimeOffset.UtcNow;
+        private int amountOfEnemies = 5;
 
         public EnemyManager(AnimatedSet animatedSet, WindowOptions windowOptions, params AnimatedGameObject[] targets)
         {
@@ -23,14 +25,19 @@ namespace PhobiaX
 
             this.targets = targets;
 
-            GenerateEnemies(20);
+            GenerateEnemies(amountOfEnemies);
+        }
+
+        public void SetDesiredAmountOfEnemies(int amountOfEnemies)
+        {
+            this.amountOfEnemies = amountOfEnemies;
         }
 
         private void GenerateEnemies(int amount)
         {
             for (int i = 0; i < amount; i++)
             {
-                var enemy = new AnimatedGameObject(new AnimatedSet(animatedSet), 100);
+                var enemy = new AnimatedGameObject(new AnimatedSet(animatedSet), 30);
 
                 var x = random.Next(windowOptions.Width);
                 var y = random.Next(windowOptions.Height);
@@ -60,6 +67,8 @@ namespace PhobiaX
                     i--;
                     continue;
                 }
+
+                enemy.Speed = 3;
 
                 enemies.Add(enemy);
             }
@@ -155,6 +164,35 @@ namespace PhobiaX
         public void MoveEnemies()
         {
             MoveToClosestTarget(70, 20);
+
+            var enemiesToDrop = new List<AnimatedGameObject>();
+
+            foreach (var enemy in enemies)
+            {
+                if (enemy.IsFinalAnimationFinished)
+                {
+                    enemiesToDrop.Add(enemy);
+                }
+            }
+
+            var currentAmountOfEnemies = enemies.Count - enemiesToDrop.Count;
+            if (currentAmountOfEnemies < this.amountOfEnemies)
+            {
+                GenerateEnemies(this.amountOfEnemies - currentAmountOfEnemies);
+            }
+
+
+            if ((DateTimeOffset.UtcNow - lastEnemyCleanup).TotalMilliseconds > 6000)
+            {
+                foreach (var enemy in enemiesToDrop)
+                {
+                    enemies.Remove(enemy);
+                }
+
+                enemiesToDrop.Clear();
+
+                lastEnemyCleanup = DateTimeOffset.UtcNow;
+            }
         }
 
         public void Draw(SDLSurface surface)

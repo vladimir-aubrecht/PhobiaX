@@ -29,6 +29,7 @@ namespace PhobiaX.GameObjects
 			}
 			
 			var rocket = new EffectGameObject(new AnimatedSet(effectsAnimatedSet), this);
+			rocket.Speed = 12;
 
 			if ((DateTimeOffset.UtcNow - lastShoot).TotalMilliseconds > 300)
 			{
@@ -48,13 +49,14 @@ namespace PhobiaX.GameObjects
 
 				foreach (var gameObject in gameObjects)
 				{
-					if (gameObject.CanBeHit && rocket.IsColliding(gameObject))
+					if (gameObject.CanBeHit && rocket.CanBeHit && rocket.IsColliding(gameObject))
 					{
 						if (!(gameObject is PlayerGameObject))
 						{
 							Score++;
 						}
 						
+						rocket.Hit();
 						gameObject.Hit();
 						rocketsToDrop.Add(rocket);
 					}
@@ -63,7 +65,10 @@ namespace PhobiaX.GameObjects
 
 			foreach (var rocket in rocketsToDrop)
 			{
-				rockets.Remove(rocket);
+				if (rocket.IsFinalAnimationFinished)
+				{
+					rockets.Remove(rocket);
+				}
 			}
 
 			rocketsToDrop.Clear();
