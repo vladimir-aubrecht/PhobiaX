@@ -42,13 +42,12 @@ namespace PhobiaX
             this.actionBinder = actionBinder ?? throw new ArgumentNullException(nameof(actionBinder));
 
             screenSurface = renderer.CreateSurface(windowOptions.Width, windowOptions.Height);
-
-            assetProvider.LoadSurfaces("AssetResources/UI/Bars", 255, 255, 255);
-            assetProvider.LoadSurfaces("AssetResources/UI/Symbols", 48, 255, 0);
-            assetProvider.LoadSurfaces("AssetResources/Environments", 255, 255, 255);
-            assetProvider.LoadAnimations("AssetResources/Player", "neutral", "death", 2, 65, 17);
-            assetProvider.LoadAnimations("AssetResources/Aliens", "neutral", "death", 0, 0, 255);
-            assetProvider.LoadAnimations("AssetResources/Effects", "rocket", "explosion", 2, 65, 17);
+            assetProvider.LoadSurfaces("AssetResources/UI/Bars", new SDLColor(255, 255, 255));
+            assetProvider.LoadSurfaces("AssetResources/UI/Symbols", new SDLColor(48, 255, 0), new SDLColor(49, 255, 0));
+            assetProvider.LoadSurfaces("AssetResources/Environments", new SDLColor(255, 255, 255));
+            assetProvider.LoadAnimations("AssetResources/Player", "neutral", "death", new SDLColor(2, 65, 17), new SDLColor(2, 66, 17), new SDLColor(2, 66, 18));
+            assetProvider.LoadAnimations("AssetResources/Aliens", "neutral", "death", new SDLColor(0, 0, 255), new SDLColor(18, 18, 242));
+            assetProvider.LoadAnimations("AssetResources/Effects", "rocket", "explosion", new SDLColor(2, 65, 17), new SDLColor(2, 66, 17), new SDLColor(2, 66, 18));
 
             var playerAnimatedSet = assetProvider.GetAnimatedSurfaces()["player"];
             var effectsAnimatedSet = assetProvider.GetAnimatedSurfaces()["effects"];

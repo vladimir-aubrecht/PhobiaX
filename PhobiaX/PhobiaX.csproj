@@ -17,7 +17,6 @@
         <None Include="Form1.cs" />
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="SDL2\" />
         <Folder Include="SDL2\Wrappers\" />
         <Folder Include="Assets\" />
         <Folder Include="Actions\" />

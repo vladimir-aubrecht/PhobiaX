@@ -28,7 +28,7 @@ namespace PhobiaX
             }
         }
 
-        public void LoadAnimations(string resourcesPath, string defaultSetName, string finalSetName, byte r, byte g, byte b)
+        public void LoadAnimations(string resourcesPath, string defaultSetName, string finalSetName, params SDLColor[] transparencyColors)
         {
             var map = new Dictionary<string, List<string>>();
             foreach (var file in Directory.EnumerateFiles(resourcesPath, "*.bmp", SearchOption.AllDirectories))
@@ -62,8 +62,11 @@ namespace PhobiaX
                 foreach (var animation in set)
                 {
                     var surface = renderer.LoadSurface(animation);
-                    surface.SetColorKey(r, g, b);
-                    surfaces.Add(surface);
+
+                    SDLSurface filteredSurface = FilterOutTransparencyColors(transparencyColors, surface);
+
+                    filteredSurface.SetColorKey(0, 0, 0);
+                    surfaces.Add(filteredSurface);
                 }
 
                 var rootFolderName = Path.GetFileName(resourcesPath).ToLower();
@@ -83,16 +86,33 @@ namespace PhobiaX
             }
         }
 
-        public void LoadSurfaces(string resourcesPath, byte r, byte g, byte b)
+        private SDLSurface FilterOutTransparencyColors(SDLColor[] transparencyColors, SDLSurface surface)
+        {
+            var filteredSurface = surface;
+
+            foreach (var transparencyColor in transparencyColors)
+            {
+                var newFilteredSurface = renderer.ChangeSpecificSurfaceColorToBlack(filteredSurface, transparencyColor.Red, transparencyColor.Green, transparencyColor.Blue);
+                filteredSurface.Dispose();
+                filteredSurface = newFilteredSurface;
+            }
+
+            return filteredSurface;
+        }
+
+        public void LoadSurfaces(string resourcesPath, params SDLColor[] transparencyColors)
         {
             foreach (var file in Directory.EnumerateFiles(resourcesPath, "*.bmp", SearchOption.AllDirectories))
             {
                 var directoryName = Path.GetFileName(Path.GetDirectoryName(file));
                 var fileName = Path.GetFileNameWithoutExtension(file);
                 var surface = renderer.LoadSurface(file);
-                surface.SetColorKey(r, g, b);
 
-                surfaces.AddTexture($"{directoryName.ToLower()}_{fileName.ToLower()}", surface);
+                var filteredSurface = FilterOutTransparencyColors(transparencyColors, surface);
+
+                filteredSurface.SetColorKey(0, 0, 0);
+
+                surfaces.AddTexture($"{directoryName.ToLower()}_{fileName.ToLower()}", filteredSurface);
             }
         }
 

@@ -38,6 +38,18 @@ namespace PhobiaX.SDL2
             return new SDLSurface(sdl2, width, height);
         }
 
+        public SDLSurface ChangeSpecificSurfaceColorToBlack(SDLSurface surface, byte r, byte g, byte b)
+        {
+
+            var finalSurface = new SDLSurface(sdl2, surface.Surface.w, surface.Surface.h, 32, 0, 0, 0, 0);
+            surface.SetColorKey(r, g, b);
+
+            var surfaceRectangle = new SDL.SDL_Rect() { x = 0, y = 0, w = surface.Surface.w, h = surface.Surface.h };
+            surface.BlitSurface(finalSurface, ref surfaceRectangle);
+
+            return finalSurface;
+        }
+
         public SDLSurface CreateResizedSurface(SDLSurface originalSurface, int newWidth)
         {
             var ratio = (float)originalSurface.Surface.w / originalSurface.Surface.h;
