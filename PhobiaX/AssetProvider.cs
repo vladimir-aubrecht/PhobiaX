@@ -83,13 +83,14 @@ namespace PhobiaX
             }
         }
 
-        public void LoadSurfaces(string resourcesPath)
+        public void LoadSurfaces(string resourcesPath, byte r, byte g, byte b)
         {
             foreach (var file in Directory.EnumerateFiles(resourcesPath, "*.bmp", SearchOption.AllDirectories))
             {
                 var directoryName = Path.GetFileName(Path.GetDirectoryName(file));
                 var fileName = Path.GetFileNameWithoutExtension(file);
                 var surface = renderer.LoadSurface(file);
+                surface.SetColorKey(r, g, b);
 
                 surfaces.AddTexture($"{directoryName.ToLower()}_{fileName.ToLower()}", surface);
             }

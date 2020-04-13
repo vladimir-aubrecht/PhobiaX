@@ -27,6 +27,8 @@ namespace PhobiaX
         private PlayerObject hero1;
         private PlayerObject hero2;
         private StaticGameObject map;
+        private StaticGameObject scoreBar;
+        private StaticGameObject energyBar;
 
         public Program(SDLApplication application, SDLRenderer renderer, SDLEventProcessor eventProcessor, SDLKeyboardStates keyboardProcessor, AssetProvider assetProvider, ActionBinder actionBinder, WindowOptions windowOptions)
         {
@@ -39,8 +41,8 @@ namespace PhobiaX
 
             screenSurface = renderer.CreateSurface(windowOptions.Width, windowOptions.Height);
 
-            assetProvider.LoadSurfaces("AssetResources/UI");
-            assetProvider.LoadSurfaces("AssetResources/Environments");
+            assetProvider.LoadSurfaces("AssetResources/UI", 255, 255, 255);
+            assetProvider.LoadSurfaces("AssetResources/Environments", 255, 255, 255);
             assetProvider.LoadAnimations("AssetResources/Player", "neutral", "death", 2, 65, 17);
             assetProvider.LoadAnimations("AssetResources/Aliens", "neutral", "death", 0, 0, 255);
             assetProvider.LoadAnimations("AssetResources/Effects", "rocket", "explosion", 2, 65, 17);
@@ -48,11 +50,16 @@ namespace PhobiaX
             var playerAnimatedSet = assetProvider.GetAnimatedSurfaces()["player"];
             var effectsAnimatedSet = assetProvider.GetAnimatedSurfaces()["effects"];
             var mapSurface = assetProvider.GetSurfaces().GetSurface("environments_grass");
+            var scoreBarSurface = assetProvider.GetSurfaces().GetSurface("bars_score");
+            var energyBarSurface = assetProvider.GetSurfaces().GetSurface("bars_energy");
 
-            var scaledMapSurface = renderer.CreateSurface(windowOptions.Width, windowOptions.Height);
-            mapSurface.BlitScaled(scaledMapSurface, IntPtr.Zero);
+            var scaledMapSurface = renderer.CreateResizedSurface(mapSurface, windowOptions.Width);
+            var scaledScoreBarSurface = renderer.CreateResizedSurface(scoreBarSurface, windowOptions.Width / 6);
+            var scaledEnergyBarSurface = renderer.CreateResizedSurface(energyBarSurface, windowOptions.Width / 6);
 
             map = new StaticGameObject(0, 0, scaledMapSurface);
+            scoreBar = new StaticGameObject(0, 0, scaledScoreBarSurface);
+            energyBar = new StaticGameObject(windowOptions.Width - windowOptions.Width / 6, 0, scaledEnergyBarSurface);
             hero1 = new PlayerObject(new AnimatedSet(playerAnimatedSet), new AnimatedSet(effectsAnimatedSet));
             hero2 = new PlayerObject(new AnimatedSet(playerAnimatedSet), new AnimatedSet(effectsAnimatedSet));
 
@@ -125,6 +132,9 @@ namespace PhobiaX
             hero1.Draw(screenSurface);
             hero2.Draw(screenSurface);
 
+            scoreBar.Draw(screenSurface);
+            energyBar.Draw(screenSurface);
+
             renderer.Copy(screenSurface.SurfacePointer, IntPtr.Zero, IntPtr.Zero);
 
             renderer.Present();
@@ -146,7 +156,7 @@ namespace PhobiaX
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddLogging((builder) => builder.AddConsole().SetMinimumLevel(LogLevel.Debug));
-            serviceCollection.AddSingleton((sc) => new WindowOptions { Title = "PhobiaX", X = 0, Y = 0, Width = 1024, Height = 768, WindowFlags = SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL });
+            serviceCollection.AddSingleton((sc) => new WindowOptions { Title = "PhobiaX", X = 0, Y = 0, Width = 1024, Height = 768, WindowFlags = SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL.SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI });
             serviceCollection.AddSingleton((sc) => new RendererOptions { Index = -1, RendererFlags = SDL.SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC | SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED });
 
             serviceCollection.AddSingleton<Program>();

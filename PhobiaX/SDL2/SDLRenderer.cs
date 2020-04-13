@@ -38,6 +38,14 @@ namespace PhobiaX.SDL2
             return new SDLSurface(sdl2, width, height);
         }
 
+        public SDLSurface CreateResizedSurface(SDLSurface originalSurface, int newWidth)
+        {
+            var ratio = (float)originalSurface.Surface.w / originalSurface.Surface.h;
+            var resizedSurface = this.CreateSurface(newWidth, (int)(newWidth / ratio));
+            originalSurface.BlitScaled(resizedSurface, IntPtr.Zero);
+            return resizedSurface;
+        }
+
         public IntPtr CreateTextureFromSurface(IntPtr surface)
         {
             return sdl2.CreateTextureFromSurface(Handle, surface);
