@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PhobiaX.Actions;
 using PhobiaX.Assets;
+using PhobiaX.GameObjects;
 using PhobiaX.SDL2;
 using PhobiaX.SDL2.Options;
 using PhobiaX.SDL2.Wrappers;
@@ -23,15 +24,9 @@ namespace PhobiaX
         private readonly ActionBinder actionBinder;
         private readonly EnemyManager enemyManager;
         private SDLSurface screenSurface;
-        private GameObject hero1;
-        private GameObject hero2;
-
-        private IList<EffectGameObject> rocketsToDrop = new List<EffectGameObject>();
-        private IList<EffectGameObject> rockets = new List<EffectGameObject>();
-
-        private bool player1Fire = false;
-        private bool player2Fire = false;
-
+        private PlayerObject hero1;
+        private PlayerObject hero2;
+        private StaticGameObject map;
 
         public Program(SDLApplication application, SDLRenderer renderer, SDLEventProcessor eventProcessor, SDLKeyboardStates keyboardProcessor, AssetProvider assetProvider, ActionBinder actionBinder, WindowOptions windowOptions)
         {
@@ -51,8 +46,12 @@ namespace PhobiaX
             assetProvider.LoadAnimations("AssetResources/Effects", "rocket", 2, 65, 17);
 
             var playerAnimatedSet = assetProvider.GetAnimatedSurfaces()["player"];
-            hero1 = new GameObject(new AnimatedSet(playerAnimatedSet));
-            hero2 = new GameObject(new AnimatedSet(playerAnimatedSet));
+            var effectsAnimatedSet = assetProvider.GetAnimatedSurfaces()["effects"];
+            var mapSurface = assetProvider.GetSurfaces().GetSurface("environments_grass");
+
+            map = new StaticGameObject(0, 0, mapSurface);
+            hero1 = new PlayerObject(new AnimatedSet(playerAnimatedSet), new AnimatedSet(effectsAnimatedSet));
+            hero2 = new PlayerObject(new AnimatedSet(playerAnimatedSet), new AnimatedSet(effectsAnimatedSet));
 
             hero1.X = windowOptions.Width / 3;
             hero2.X = 2 * windowOptions.Width / 3;
@@ -87,14 +86,14 @@ namespace PhobiaX
             actionBinder.RegisterPressAction(GameAction.Player1RotateLeft, () => hero1.TurnLeft());
             actionBinder.RegisterPressAction(GameAction.Player1RotateRight, () => hero1.TurnRight());
             actionBinder.RegisterPressAction(GameAction.Player1StopMoving, () => hero1.Stop());
-            actionBinder.RegisterPressAction(GameAction.Player1Fire, () => player1Fire = true);
+            actionBinder.RegisterPressAction(GameAction.Player1Fire, () => hero1.Shoot());
 
             actionBinder.RegisterPressAction(GameAction.Player2MoveForward, () => hero2.MoveForward());
             actionBinder.RegisterPressAction(GameAction.Player2MoveBackward, () => hero2.MoveBackward());
             actionBinder.RegisterPressAction(GameAction.Player2RotateLeft, () => hero2.TurnLeft());
             actionBinder.RegisterPressAction(GameAction.Player2RotateRight, () => hero2.TurnRight());
             actionBinder.RegisterPressAction(GameAction.Player2StopMoving, () => hero2.Stop());
-            actionBinder.RegisterPressAction(GameAction.Player2Fire, () => player2Fire = true);
+            actionBinder.RegisterPressAction(GameAction.Player2Fire, () => hero2.Shoot()) ;
 
             actionBinder.RegisterPressAction(GameAction.Quit, () => application.Quit());
         }
@@ -109,52 +108,15 @@ namespace PhobiaX
 
         private void DoGameLoop()
         {
-            var surfaces = assetProvider.GetSurfaces();
-            var map = surfaces.GetSurface("environments_grass");
-
             keyboardProcessor.ScanKeys();
 
-            map.BlitScaled(screenSurface, IntPtr.Zero);
+            hero1.EvaluateRockets(map, hero2);
+            hero2.EvaluateRockets(map, hero1);
 
+            map.Draw(screenSurface);
             hero1.Draw(screenSurface);
             hero2.Draw(screenSurface);
-
             enemyManager.Draw(screenSurface);
-
-            if (player1Fire)
-            {
-                var effectsAnimatedSet = assetProvider.GetAnimatedSurfaces()["effects"];
-                var rocket = new EffectGameObject(new AnimatedSet(effectsAnimatedSet), hero1);
-                rockets.Add(rocket);
-                player1Fire = false;
-            }
-
-            if (player2Fire)
-            {
-                var effectsAnimatedSet = assetProvider.GetAnimatedSurfaces()["effects"];
-                var rocket = new EffectGameObject(new AnimatedSet(effectsAnimatedSet), hero2);
-                rockets.Add(rocket);
-                player2Fire = false;
-            }
-
-            foreach (var rocket in rockets)
-            {
-                if (rocket.IsColliding(hero1) || rocket.IsColliding(hero2) || !rocket.IsColliding(0, 0, screenSurface))
-                {
-                    rocketsToDrop.Add(rocket);
-                    continue;
-                }
-
-                rocket.MoveForward();
-                rocket.Draw(screenSurface);
-            }
-
-            foreach (var rocket in rocketsToDrop)
-            {
-                rockets.Remove(rocket);
-            }
-
-            rocketsToDrop.Clear();
 
             renderer.Copy(screenSurface.SurfacePointer, IntPtr.Zero, IntPtr.Zero);
 

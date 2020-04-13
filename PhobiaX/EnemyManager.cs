@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using PhobiaX.Assets;
+using PhobiaX.GameObjects;
 using PhobiaX.SDL2;
 using PhobiaX.SDL2.Options;
 
@@ -10,11 +11,11 @@ namespace PhobiaX
     {
         private readonly AnimatedSet animatedSet;
         private readonly WindowOptions windowOptions;
-        private readonly GameObject[] targets;
-        private readonly IList<GameObject> enemies = new List<GameObject>();
+        private readonly AnimatedGameObject[] targets;
+        private readonly IList<AnimatedGameObject> enemies = new List<AnimatedGameObject>();
         private readonly Random random = new Random();
 
-        public EnemyManager(AnimatedSet animatedSet, WindowOptions windowOptions, params GameObject[] targets)
+        public EnemyManager(AnimatedSet animatedSet, WindowOptions windowOptions, params AnimatedGameObject[] targets)
         {
             this.animatedSet = animatedSet ?? throw new ArgumentNullException(nameof(animatedSet));
             this.windowOptions = windowOptions;
@@ -28,7 +29,7 @@ namespace PhobiaX
         {
             for (int i = 0; i < amount; i++)
             {
-                var enemy = new GameObject(new AnimatedSet(animatedSet));
+                var enemy = new AnimatedGameObject(new AnimatedSet(animatedSet));
 
                 var x = random.Next(windowOptions.Width);
                 var y = random.Next(windowOptions.Height);
@@ -87,17 +88,12 @@ namespace PhobiaX
 
                 if (HasEnemyCollissionWithRestOfEnemies(enemy))
                 {
-                    enemy.X = originalX;
-                    enemy.Y = originalY;
-                    enemy.Angle = originalAngle;
-                    enemy.AnimatedSet.GetCurrentAnimatedAsset().PreviousFrame();
+                    enemy.RollbackLastMove();
                 }
             }
-
-            movesInTurn = 0;
         }
 
-        private bool HasEnemyCollissionWithRestOfEnemies(GameObject testedEnemy)
+        private bool HasEnemyCollissionWithRestOfEnemies(AnimatedGameObject testedEnemy)
         {
             var isColliding = false;
             foreach (var enemy in enemies)
@@ -113,7 +109,7 @@ namespace PhobiaX
             return isColliding;
         }
 
-        private GameObject FindClosestTarget(GameObject enemy)
+        private AnimatedGameObject FindClosestTarget(AnimatedGameObject enemy)
         {
             var closestDistance = double.MaxValue;
             var closesestTarget = targets[random.Next(targets.Length)];

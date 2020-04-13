@@ -6,9 +6,9 @@ using PhobiaX.Assets;
 using PhobiaX.SDL2;
 using SDL2;
 
-namespace PhobiaX
+namespace PhobiaX.GameObjects
 {
-    public class GameObject
+    public class AnimatedGameObject : IGameObject
     {
         private const int defaultAngleOffset = 90;
         private const double CircleDegrees = 360;
@@ -17,8 +17,16 @@ namespace PhobiaX
         public int X { get; set; } = 0;
         public int Y { get; set; } = 0;
 
+        private int previousX = 0;
+        private int previousY = 0;
+        private double previousAngle = 0;
+        private int previousFrameIndex = 0;
+
         private int speed = 5;
-        public AnimatedSet AnimatedSet { get; }
+        private AnimatedSet AnimatedSet { get; }
+
+        public SDLSurface CurrentSurface => AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrame();
+
         private readonly bool alwaysStopped;
         private readonly double minimalAngleStep = 1;
         private bool isStopped = true;
@@ -34,11 +42,11 @@ namespace PhobiaX
             }
         }
 
-        public GameObject(AnimatedSet animatedSurfaceAssets) : this(animatedSurfaceAssets, false)
+        public AnimatedGameObject(AnimatedSet animatedSurfaceAssets) : this(animatedSurfaceAssets, false)
         {
         }
 
-        public GameObject(AnimatedSet animatedSurfaceAssets, bool alwaysStopped)
+        public AnimatedGameObject(AnimatedSet animatedSurfaceAssets, bool alwaysStopped)
         {
             this.AnimatedSet = animatedSurfaceAssets;
             this.alwaysStopped = alwaysStopped;
@@ -64,6 +72,8 @@ namespace PhobiaX
         {
             var radians = CalculateNewAngleInRadiansFromFrameIndex();
 
+            BackupCurrentPosition();
+
             X -= (int)(speed * Math.Cos(radians));
             Y += (int)(speed * Math.Sin(radians));
 
@@ -78,6 +88,8 @@ namespace PhobiaX
         {
             var radians = CalculateNewAngleInRadiansFromFrameIndex();
 
+            BackupCurrentPosition();
+
             X += (int)(speed * Math.Cos(radians));
             Y -= (int)(speed * Math.Sin(radians));
 
@@ -88,7 +100,23 @@ namespace PhobiaX
             }
         }
 
-        public void MoveTowards(GameObject gameObject)
+        private void BackupCurrentPosition()
+        {
+            previousX = X;
+            previousY = Y;
+            previousAngle = Angle;
+            previousFrameIndex = AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrameIndex();
+        }
+
+        public void RollbackLastMove()
+        {
+            this.X = previousX;
+            this.Y = previousY;
+            this.Angle = previousAngle;
+            this.AnimatedSet.GetCurrentAnimatedAsset().SetFrameIndex(previousFrameIndex);
+        }
+
+        public void MoveTowards(AnimatedGameObject gameObject)
         {
             if (this.IsColliding(gameObject))
             {
@@ -115,13 +143,12 @@ namespace PhobiaX
             return isCollission;
         }
 
-        public bool IsColliding(GameObject gameObject)
+        public bool IsColliding(IGameObject gameObject)
         {
-            var animatedAsset = AnimatedSet.GetCurrentAnimatedAsset();
-            return IsColliding(gameObject.X, gameObject.Y, gameObject.AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrame());
+            return IsColliding(gameObject.X, gameObject.Y, gameObject.CurrentSurface);
         }
 
-        public void Draw(SDLSurface destination)
+        public virtual void Draw(SDLSurface destination)
         {
             var animatedAsset = AnimatedSet.GetCurrentAnimatedAsset();
 
@@ -136,7 +163,7 @@ namespace PhobiaX
             objectSurface.BlitSurface(destination, ref letterRect);
         }
 
-        private static double CalculateAngleTowardsGameObject(int x, int y, GameObject gameObject)
+        private static double CalculateAngleTowardsGameObject(int x, int y, AnimatedGameObject gameObject)
         {
             double xDiff = gameObject.X - x;
             double yDiff = gameObject.Y - y;
