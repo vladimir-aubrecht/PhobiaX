@@ -12,6 +12,7 @@ namespace PhobiaX.GameObjects
 		private string text;
 		private readonly IDictionary<char, SDLSurface> symbolSurfaces;
 		private readonly SDLRenderer renderer;
+		private readonly int maxWidth;
 
 		public int X { get; }
 
@@ -19,13 +20,13 @@ namespace PhobiaX.GameObjects
 
 		public bool CanBeHit { get; } = false;
 
-		public TextGameObject(int x, int y, IDictionary<char, SDLSurface> symbolSurfaces, SDLRenderer renderer)
+		public TextGameObject(int x, int y, IDictionary<char, SDLSurface> symbolSurfaces, SDLRenderer renderer, int maxWidth)
 		{
 			X = x;
 			Y = y;
 			this.symbolSurfaces = symbolSurfaces ?? throw new ArgumentNullException(nameof(symbolSurfaces));
 			this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
-
+			this.maxWidth = maxWidth;
 			SetText("");
 		}
 
@@ -65,7 +66,7 @@ namespace PhobiaX.GameObjects
 				x += surface.Surface.w;
 			}
 
-			CurrentSurface = textSurface;
+			CurrentSurface = renderer.CreateResizedSurface(textSurface, maxWidth);
 		}
 	}
 }
