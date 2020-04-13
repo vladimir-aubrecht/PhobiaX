@@ -6,7 +6,7 @@ using System.Text;
 
 namespace PhobiaX.GameObjects
 {
-	public class PlayerObject : AnimatedGameObject
+	public class PlayerGameObject : AnimatedGameObject
 	{
 		private readonly AnimatedSet effectsAnimatedSet;
 
@@ -14,7 +14,7 @@ namespace PhobiaX.GameObjects
 		private IList<EffectGameObject> rockets = new List<EffectGameObject>();
 		private DateTimeOffset lastShoot = DateTimeOffset.MinValue;
 
-		public PlayerObject(AnimatedSet playerAnimatedSet, AnimatedSet effectsAnimatedSet) : base(playerAnimatedSet, false)
+		public PlayerGameObject(AnimatedSet playerAnimatedSet, AnimatedSet effectsAnimatedSet) : base(playerAnimatedSet, false)
 		{
 			this.effectsAnimatedSet = effectsAnimatedSet ?? throw new ArgumentNullException(nameof(effectsAnimatedSet));
 		}

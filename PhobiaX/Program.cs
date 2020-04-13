@@ -24,11 +24,12 @@ namespace PhobiaX
         private readonly ActionBinder actionBinder;
         private readonly EnemyManager enemyManager;
         private SDLSurface screenSurface;
-        private PlayerObject hero1;
-        private PlayerObject hero2;
+        private PlayerGameObject hero1;
+        private PlayerGameObject hero2;
         private StaticGameObject map;
         private StaticGameObject scoreBar;
         private StaticGameObject energyBar;
+        private TextGameObject score;
 
         public Program(SDLApplication application, SDLRenderer renderer, SDLEventProcessor eventProcessor, SDLKeyboardStates keyboardProcessor, AssetProvider assetProvider, ActionBinder actionBinder, WindowOptions windowOptions)
         {
@@ -41,7 +42,7 @@ namespace PhobiaX
 
             screenSurface = renderer.CreateSurface(windowOptions.Width, windowOptions.Height);
 
-            assetProvider.LoadSurfaces("AssetResources/UI", 255, 255, 255);
+            assetProvider.LoadSurfaces("AssetResources/UI", 48, 255, 0);
             assetProvider.LoadSurfaces("AssetResources/Environments", 255, 255, 255);
             assetProvider.LoadAnimations("AssetResources/Player", "neutral", "death", 2, 65, 17);
             assetProvider.LoadAnimations("AssetResources/Aliens", "neutral", "death", 0, 0, 255);
@@ -56,12 +57,14 @@ namespace PhobiaX
             var scaledMapSurface = renderer.CreateResizedSurface(mapSurface, windowOptions.Width);
             var scaledScoreBarSurface = renderer.CreateResizedSurface(scoreBarSurface, windowOptions.Width / 6);
             var scaledEnergyBarSurface = renderer.CreateResizedSurface(energyBarSurface, windowOptions.Width / 6);
+            var symbolMap = CreateSymbolMap(assetProvider.GetSurfaces());
 
+            score = new TextGameObject(0, 0, symbolMap, renderer);
             map = new StaticGameObject(0, 0, scaledMapSurface);
             scoreBar = new StaticGameObject(-2, -8, scaledScoreBarSurface);
             energyBar = new StaticGameObject(windowOptions.Width - windowOptions.Width / 6, -8, scaledEnergyBarSurface);
-            hero1 = new PlayerObject(new AnimatedSet(playerAnimatedSet), new AnimatedSet(effectsAnimatedSet));
-            hero2 = new PlayerObject(new AnimatedSet(playerAnimatedSet), new AnimatedSet(effectsAnimatedSet));
+            hero1 = new PlayerGameObject(new AnimatedSet(playerAnimatedSet), new AnimatedSet(effectsAnimatedSet));
+            hero2 = new PlayerGameObject(new AnimatedSet(playerAnimatedSet), new AnimatedSet(effectsAnimatedSet));
 
             hero1.X = windowOptions.Width / 3;
             hero2.X = 2 * windowOptions.Width / 3;
@@ -71,6 +74,20 @@ namespace PhobiaX
             this.enemyManager = new EnemyManager(assetProvider.GetAnimatedSurfaces()["aliens"], windowOptions, hero1, hero2);
 
             InitKeyboardController();
+        }
+
+        private static Dictionary<char, SDLSurface> CreateSymbolMap(SurfaceAssets surfaceAssets)
+        {
+            string symbols = "abcdefghijklmnopqrstuvwxyz0123456789";
+            var symbolMap = new Dictionary<char, SDLSurface>();
+
+            foreach (var symbol in symbols)
+            {
+                var surface = surfaceAssets.GetSurface($"symbols_{symbol}");
+                symbolMap.Add(symbol, surface);
+            }
+
+            return symbolMap;
         }
 
         private void InitKeyboardController()
@@ -124,6 +141,8 @@ namespace PhobiaX
             enemies.Add(hero1);
             enemies.Add(hero2);
 
+            score.SetText("100");
+
             hero1.EvaluateRockets(map, enemies);
             hero2.EvaluateRockets(map, enemies);
 
@@ -134,6 +153,7 @@ namespace PhobiaX
 
             scoreBar.Draw(screenSurface);
             energyBar.Draw(screenSurface);
+            score.Draw(screenSurface);
 
             renderer.Copy(screenSurface.SurfacePointer, IntPtr.Zero, IntPtr.Zero);
 
