@@ -42,6 +42,7 @@ namespace PhobiaX.SDL2
         {
             var ratio = (float)originalSurface.Surface.w / originalSurface.Surface.h;
             var resizedSurface = this.CreateSurface(newWidth, (int)(newWidth / ratio));
+            resizedSurface.SetColorKey(0, 0, 0);
             originalSurface.BlitScaled(resizedSurface, IntPtr.Zero);
             return resizedSurface;
         }

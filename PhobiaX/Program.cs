@@ -58,8 +58,8 @@ namespace PhobiaX
             var scaledEnergyBarSurface = renderer.CreateResizedSurface(energyBarSurface, windowOptions.Width / 6);
 
             map = new StaticGameObject(0, 0, scaledMapSurface);
-            scoreBar = new StaticGameObject(0, 0, scaledScoreBarSurface);
-            energyBar = new StaticGameObject(windowOptions.Width - windowOptions.Width / 6, 0, scaledEnergyBarSurface);
+            scoreBar = new StaticGameObject(-2, -8, scaledScoreBarSurface);
+            energyBar = new StaticGameObject(windowOptions.Width - windowOptions.Width / 6, -8, scaledEnergyBarSurface);
             hero1 = new PlayerObject(new AnimatedSet(playerAnimatedSet), new AnimatedSet(effectsAnimatedSet));
             hero2 = new PlayerObject(new AnimatedSet(playerAnimatedSet), new AnimatedSet(effectsAnimatedSet));
 
@@ -103,7 +103,7 @@ namespace PhobiaX
             actionBinder.RegisterPressAction(GameAction.Player2RotateLeft, () => hero2.TurnLeft());
             actionBinder.RegisterPressAction(GameAction.Player2RotateRight, () => hero2.TurnRight());
             actionBinder.RegisterPressAction(GameAction.Player2StopMoving, () => hero2.Stop());
-            actionBinder.RegisterPressAction(GameAction.Player2Fire, () => hero2.Shoot()) ;
+            actionBinder.RegisterPressAction(GameAction.Player2Fire, () => hero2.Shoot());
 
             actionBinder.RegisterPressAction(GameAction.Quit, () => application.Quit());
         }
