@@ -158,9 +158,9 @@ namespace PhobiaX.GameObjects
             }
 
             var objectSurface = animatedAsset.GetCurrentFrame();
-            var letterRect = new SDL.SDL_Rect() { x = X, y = Y, w = objectSurface.Surface.w, h = objectSurface.Surface.h };
+            var surfaceRectangle = new SDL.SDL_Rect() { x = X, y = Y, w = objectSurface.Surface.w, h = objectSurface.Surface.h };
             //image.SetColorKey(48, 255, 0); //numbers
-            objectSurface.BlitSurface(destination, ref letterRect);
+            objectSurface.BlitSurface(destination, ref surfaceRectangle);
         }
 
         private static double CalculateAngleTowardsGameObject(int x, int y, AnimatedGameObject gameObject)

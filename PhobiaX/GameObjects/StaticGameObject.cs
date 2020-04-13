@@ -1,4 +1,5 @@
 ﻿using PhobiaX.SDL2;
+using SDL2;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,7 +21,8 @@ namespace PhobiaX.GameObjects
 
 		public void Draw(SDLSurface destination)
 		{
-			this.CurrentSurface.BlitScaled(destination, IntPtr.Zero);
+			var surfaceRectangle = new SDL.SDL_Rect() { x = X, y = Y, w = CurrentSurface.Surface.w, h = CurrentSurface.Surface.h };
+			this.CurrentSurface.BlitSurface(destination, ref surfaceRectangle);
 		}
 
 		public bool IsColliding(IGameObject gameObject)

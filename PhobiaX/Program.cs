@@ -49,7 +49,10 @@ namespace PhobiaX
             var effectsAnimatedSet = assetProvider.GetAnimatedSurfaces()["effects"];
             var mapSurface = assetProvider.GetSurfaces().GetSurface("environments_grass");
 
-            map = new StaticGameObject(0, 0, mapSurface);
+            var scaledMapSurface = renderer.CreateSurface(windowOptions.Width, windowOptions.Height);
+            mapSurface.BlitScaled(scaledMapSurface, IntPtr.Zero);
+
+            map = new StaticGameObject(0, 0, scaledMapSurface);
             hero1 = new PlayerObject(new AnimatedSet(playerAnimatedSet), new AnimatedSet(effectsAnimatedSet));
             hero2 = new PlayerObject(new AnimatedSet(playerAnimatedSet), new AnimatedSet(effectsAnimatedSet));
 
