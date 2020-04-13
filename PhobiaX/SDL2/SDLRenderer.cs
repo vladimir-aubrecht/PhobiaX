@@ -47,11 +47,6 @@ namespace PhobiaX.SDL2
             return resizedSurface;
         }
 
-        public IntPtr CreateTextureFromSurface(IntPtr surface)
-        {
-            return sdl2.CreateTextureFromSurface(Handle, surface);
-        }
-
         public void Copy(IntPtr surfacePointer, IntPtr sourceRectangle, IntPtr destinationRectangle)
         {
             var texture = sdl2.CreateTextureFromSurface(Handle, surfacePointer);
@@ -59,32 +54,9 @@ namespace PhobiaX.SDL2
             sdl2.DestroyTexture(texture);
         }
 
-        public void Copy(IntPtr surfacePointer, ref SDL.SDL_Rect sourceRectangle, IntPtr destinationRectangle)
-        {
-            var texture = sdl2.CreateTextureFromSurface(Handle, surfacePointer);
-            sdl2.RenderCopy(Handle, texture, ref sourceRectangle, destinationRectangle);
-        }
-
-        public void Copy(IntPtr surfacePointer, IntPtr sourceRectangle, ref SDL.SDL_Rect destinationRectangle)
-        {
-            var texture = sdl2.CreateTextureFromSurface(Handle, surfacePointer);
-            sdl2.RenderCopy(Handle, texture, sourceRectangle, ref destinationRectangle);
-        }
-
-        public void Copy(IntPtr surfacePointer, ref SDL.SDL_Rect sourceRectangle, ref SDL.SDL_Rect destinationRectangle)
-        {
-            var texture = sdl2.CreateTextureFromSurface(Handle, surfacePointer);
-            sdl2.RenderCopy(Handle, texture, ref sourceRectangle, ref destinationRectangle);
-        }
-
         public void Present()
         {
             sdl2.RenderPresent(Handle);
-        }
-
-        public int SetColorKey(IntPtr surface, int flag, uint key)
-        {
-            return sdl2.SetColorKey(surface, flag, key);
         }
 
         public void Dispose()
