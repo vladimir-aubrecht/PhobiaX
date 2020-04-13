@@ -236,7 +236,7 @@ namespace PhobiaX.GameObjects
             return (x % m + m) % m;
         }
 
-        public void Hit()
+        public virtual void Hit()
         {
             isHit = true;
         }

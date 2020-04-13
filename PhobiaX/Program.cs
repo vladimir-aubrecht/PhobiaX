@@ -29,8 +29,10 @@ namespace PhobiaX
         private StaticGameObject map;
         private StaticGameObject scoreBar;
         private StaticGameObject energyBar;
-        private TextGameObject score;
-        private TextGameObject energy;
+        private TextGameObject scorePlayer1;
+        private TextGameObject energyPlayer1;
+        private TextGameObject scorePlayer2;
+        private TextGameObject energyPlayer2;
 
         public Program(SDLApplication application, SDLRenderer renderer, SDLEventProcessor eventProcessor, SDLKeyboardStates keyboardProcessor, AssetProvider assetProvider, ActionBinder actionBinder, WindowOptions windowOptions)
         {
@@ -60,9 +62,14 @@ namespace PhobiaX
             var scaledEnergyBarSurface = renderer.CreateResizedSurface(energyBarSurface, windowOptions.Width / 6);
             var symbolMap = CreateSymbolMap(assetProvider.GetSurfaces());
 
-            var energyBarX = windowOptions.Width - windowOptions.Width / 6;
-            score = new TextGameObject(scaledScoreBarSurface.Surface.w - 55, 18, symbolMap, renderer, windowOptions.Width / 25);
-            energy = new TextGameObject(energyBarX + 10, 18, symbolMap, renderer, windowOptions.Width / 25);
+            var maxWidth = windowOptions.Width / 22;
+            var energyBarX = windowOptions.Width - 5 - windowOptions.Width / 6;
+            scorePlayer1 = new TextGameObject(scaledScoreBarSurface.Surface.w - 55, 18, symbolMap, renderer, maxWidth);
+            energyPlayer1 = new TextGameObject(energyBarX, 20, symbolMap, renderer, maxWidth + 15);
+            
+            scorePlayer2 = new TextGameObject(scaledScoreBarSurface.Surface.w - 55, 38, symbolMap, renderer, maxWidth);
+            energyPlayer2 = new TextGameObject(energyBarX, 40, symbolMap, renderer, maxWidth + 15);
+
             map = new StaticGameObject(0, 0, scaledMapSurface);
             scoreBar = new StaticGameObject(-2, -8, scaledScoreBarSurface);
             energyBar = new StaticGameObject(energyBarX, -8, scaledEnergyBarSurface);
@@ -144,8 +151,11 @@ namespace PhobiaX
             enemies.Add(hero1);
             enemies.Add(hero2);
 
-            score.SetText("100");
-            energy.SetText("100");
+            scorePlayer1.SetText($"P1 {hero1.Score}");
+            energyPlayer1.SetText($"P1 {hero1.Life}");
+
+            scorePlayer2.SetText($"P2 {hero2.Score}");
+            energyPlayer2.SetText($"P2 {hero2.Life}");
 
             hero1.EvaluateRockets(map, enemies);
             hero2.EvaluateRockets(map, enemies);
@@ -157,8 +167,11 @@ namespace PhobiaX
 
             scoreBar.Draw(screenSurface);
             energyBar.Draw(screenSurface);
-            score.Draw(screenSurface);
-            energy.Draw(screenSurface);
+            
+            scorePlayer1.Draw(screenSurface);
+            energyPlayer1.Draw(screenSurface);
+            scorePlayer2.Draw(screenSurface);
+            energyPlayer2.Draw(screenSurface);
 
             renderer.Copy(screenSurface.SurfacePointer, IntPtr.Zero, IntPtr.Zero);
 

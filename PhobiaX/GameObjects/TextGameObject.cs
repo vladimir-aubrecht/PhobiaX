@@ -3,6 +3,7 @@ using PhobiaX.SDL2;
 using SDL2;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace PhobiaX.GameObjects
@@ -44,12 +45,19 @@ namespace PhobiaX.GameObjects
 
 		public void SetText(string text)
 		{
+			text = text.ToLower();
 			this.text = text;
 
 			int width = 0;
 			int height = 0;
 			foreach (var symbol in text)
 			{
+				if (symbol == ' ')
+				{
+					width += symbolSurfaces.First().Value.Surface.w;
+					continue;
+				}
+
 				var surface = symbolSurfaces[symbol];
 				width += surface.Surface.w;
 				height = Math.Max(height, surface.Surface.h);
@@ -60,6 +68,12 @@ namespace PhobiaX.GameObjects
 			int x = 0;
 			foreach (var symbol in text)
 			{
+				if (symbol == ' ')
+				{
+					x += symbolSurfaces.First().Value.Surface.w;
+					continue;
+				}
+
 				var surface = symbolSurfaces[symbol];
 				var surfaceRectangle = new SDL.SDL_Rect() { x = x, y = 0, w = surface.Surface.w, h = surface.Surface.h };
 				surface.BlitSurface(textSurface, ref surfaceRectangle);

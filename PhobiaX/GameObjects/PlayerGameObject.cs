@@ -13,6 +13,8 @@ namespace PhobiaX.GameObjects
 		private IList<EffectGameObject> rocketsToDrop = new List<EffectGameObject>();
 		private IList<EffectGameObject> rockets = new List<EffectGameObject>();
 		private DateTimeOffset lastShoot = DateTimeOffset.MinValue;
+		public int Score { get; private set; } = 0;
+		public int Life { get; private set; } = 100;
 
 		public PlayerGameObject(AnimatedSet playerAnimatedSet, AnimatedSet effectsAnimatedSet) : base(playerAnimatedSet, false)
 		{
@@ -43,6 +45,11 @@ namespace PhobiaX.GameObjects
 				{
 					if (gameObject.CanBeHit && rocket.IsColliding(gameObject))
 					{
+						if (!(gameObject is PlayerGameObject))
+						{
+							Score++;
+						}
+						
 						gameObject.Hit();
 						rocketsToDrop.Add(rocket);
 					}
@@ -65,6 +72,19 @@ namespace PhobiaX.GameObjects
 			{
 				rocket.MoveForward();
 				rocket.Draw(destination);
+			}
+		}
+
+		public override void Hit()
+		{
+			if (Life > 0)
+			{
+				Life--;
+			}
+			
+			if (Life == 0)
+			{
+				base.Hit();
 			}
 		}
 	}
