@@ -15,6 +15,7 @@ namespace PhobiaX.Actions
         Player2MoveBackward,
         Player2RotateLeft,
         Player2RotateRight,
+        Restart,
         Quit
     }
 }
