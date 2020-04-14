@@ -12,7 +12,7 @@ namespace PhobiaX.GameObjects
 	{
 		private string text;
 		private readonly IDictionary<char, SDLSurface> symbolSurfaces;
-		private readonly SDLRenderer renderer;
+		private readonly SDLSurfaceFactory surfaceFactory;
 		private readonly int maxWidth;
 
 		public int X { get; }
@@ -21,12 +21,12 @@ namespace PhobiaX.GameObjects
 
 		public bool CanBeHit { get; } = false;
 
-		public TextGameObject(int x, int y, IDictionary<char, SDLSurface> symbolSurfaces, SDLRenderer renderer, int maxWidth)
+		public TextGameObject(int x, int y, IDictionary<char, SDLSurface> symbolSurfaces, SDLSurfaceFactory surfaceFactory, int maxWidth)
 		{
 			X = x;
 			Y = y;
 			this.symbolSurfaces = symbolSurfaces ?? throw new ArgumentNullException(nameof(symbolSurfaces));
-			this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
+			this.surfaceFactory = surfaceFactory ?? throw new ArgumentNullException(nameof(surfaceFactory));
 			this.maxWidth = maxWidth;
 			SetText("");
 		}
@@ -63,7 +63,7 @@ namespace PhobiaX.GameObjects
 				height = Math.Max(height, surface.Surface.h);
 			}
 
-			using (var textSurface = renderer.CreateSurface(width, height))
+			using (var textSurface = surfaceFactory.CreateSurface(width, height))
 			{
 				int x = 0;
 				foreach (var symbol in text)
@@ -81,7 +81,7 @@ namespace PhobiaX.GameObjects
 				}
 
 				CurrentSurface?.Dispose();
-				CurrentSurface = renderer.CreateResizedSurface(textSurface, maxWidth);
+				CurrentSurface = surfaceFactory.CreateResizedSurface(textSurface, maxWidth);
 			}
 		}
 	}

@@ -16,6 +16,7 @@ namespace PhobiaX
 {
     class Program
     {
+        private readonly TimeSpan renderingDelay = TimeSpan.FromMilliseconds(20);
         private readonly SDLApplication application;
         private readonly SDLRenderer renderer;
         private readonly SDLEventProcessor eventProcessor;
@@ -38,7 +39,7 @@ namespace PhobiaX
         private AnimatedSet playerAnimatedSet;
         private AnimatedSet effectsAnimatedSet;
 
-        public Program(SDLApplication application, SDLRenderer renderer, SDLEventProcessor eventProcessor, SDLKeyboardStates keyboardProcessor, AssetProvider assetProvider, ActionBinder actionBinder, WindowOptions windowOptions)
+        public Program(SDLApplication application, SDLRenderer renderer, SDLEventProcessor eventProcessor, SDLKeyboardStates keyboardProcessor, AssetProvider assetProvider, ActionBinder actionBinder, SDLSurfaceFactory surfaceFactory, WindowOptions windowOptions)
         {
             this.application = application ?? throw new ArgumentNullException(nameof(application));
             this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
@@ -47,7 +48,9 @@ namespace PhobiaX
             this.assetProvider = assetProvider ?? throw new ArgumentNullException(nameof(assetProvider));
             this.actionBinder = actionBinder ?? throw new ArgumentNullException(nameof(actionBinder));
             this.windowOptions = windowOptions;
-            screenSurface = renderer.CreateSurface(windowOptions.Width, windowOptions.Height);
+
+            screenSurface = surfaceFactory.CreateSurface(windowOptions.Width, windowOptions.Height);
+
             assetProvider.LoadSurfaces("AssetResources/UI/Bars", new SDLColor(255, 255, 255));
             assetProvider.LoadSurfaces("AssetResources/UI/Symbols", new SDLColor(48, 255, 0), new SDLColor(49, 255, 0));
             assetProvider.LoadSurfaces("AssetResources/Environments", new SDLColor(255, 255, 255));
@@ -61,9 +64,9 @@ namespace PhobiaX
             var scoreBarSurface = assetProvider.GetSurfaces().GetSurface("bars_score");
             var energyBarSurface = assetProvider.GetSurfaces().GetSurface("bars_energy");
 
-            var scaledMapSurface = renderer.CreateResizedSurface(mapSurface, windowOptions.Width);
-            var scaledScoreBarSurface = renderer.CreateResizedSurface(scoreBarSurface, windowOptions.Width / 6);
-            var scaledEnergyBarSurface = renderer.CreateResizedSurface(energyBarSurface, windowOptions.Width / 6);
+            var scaledMapSurface = surfaceFactory.CreateResizedSurface(mapSurface, windowOptions.Width);
+            var scaledScoreBarSurface = surfaceFactory.CreateResizedSurface(scoreBarSurface, windowOptions.Width / 6);
+            var scaledEnergyBarSurface = surfaceFactory.CreateResizedSurface(energyBarSurface, windowOptions.Width / 6);
             symbolMap = CreateSymbolMap(assetProvider.GetSurfaces());
 
             var maxWidth = windowOptions.Width / 22;
@@ -73,11 +76,11 @@ namespace PhobiaX
             scoreBar = new StaticGameObject(-2, -8, scaledScoreBarSurface);
             energyBar = new StaticGameObject(energyBarX, -8, scaledEnergyBarSurface);
 
-            scorePlayer1 = new TextGameObject(scaledScoreBarSurface.Surface.w - 55, 18, symbolMap, renderer, maxWidth);
-            energyPlayer1 = new TextGameObject(energyBarX, 20, symbolMap, renderer, maxWidth + 15);
+            scorePlayer1 = new TextGameObject(scaledScoreBarSurface.Surface.w - 55, 18, symbolMap, surfaceFactory, maxWidth);
+            energyPlayer1 = new TextGameObject(energyBarX, 20, symbolMap, surfaceFactory, maxWidth + 15);
 
-            scorePlayer2 = new TextGameObject(scaledScoreBarSurface.Surface.w - 55, 38, symbolMap, renderer, maxWidth);
-            energyPlayer2 = new TextGameObject(energyBarX, 40, symbolMap, renderer, maxWidth + 15);
+            scorePlayer2 = new TextGameObject(scaledScoreBarSurface.Surface.w - 55, 38, symbolMap, surfaceFactory, maxWidth);
+            energyPlayer2 = new TextGameObject(energyBarX, 40, symbolMap, surfaceFactory, maxWidth + 15);
 
             InitGameObjects(windowOptions, symbolMap, playerAnimatedSet, effectsAnimatedSet);
 
@@ -197,9 +200,9 @@ namespace PhobiaX
             energyPlayer2.Draw(screenSurface);
 
             renderer.Copy(screenSurface.SurfacePointer, IntPtr.Zero, IntPtr.Zero);
-
+            
             renderer.Present();
-            application.Delay(20);
+            application.Delay(renderingDelay);
 
             eventProcessor.EvaluateEvents();
         }
@@ -230,6 +233,7 @@ namespace PhobiaX
             serviceCollection.AddSingleton<ActionBinder>();
             serviceCollection.AddSingleton<SDLWindow>();
             serviceCollection.AddSingleton<SDLRenderer>();
+            serviceCollection.AddSingleton<SDLSurfaceFactory>();
 
             return serviceCollection.BuildServiceProvider();
         }

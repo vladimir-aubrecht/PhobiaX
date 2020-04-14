@@ -20,12 +20,17 @@ namespace PhobiaX.SDL2
         {
             this.application = application ?? throw new ArgumentNullException(nameof(application));
             this.logger = logger;
+            
             Handle = application.CreateWindow(windowOptions);
         }
 
         public void Dispose()
         {
+            logger?.LogDebug("Disposing");
+
             application.DestroyWindow(this);
+
+            logger?.LogDebug("Disposed");
         }
     }
 }

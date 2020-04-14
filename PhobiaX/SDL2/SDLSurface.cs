@@ -14,19 +14,15 @@ namespace PhobiaX.SDL2
 
         public IntPtr SurfacePointer { get; }
 
-        public SDLSurface(ISDL2 sdl2, int width, int height) : this(sdl2, width, height, 32, 0, 0, 0, 0)
+        internal SDLSurface(ISDL2 sdl2, int width, int height) : this(sdl2, width, height, 32, SDLColor.Black, 0)
         {
         }
 
-        public SDLSurface(ISDL2 sdl2, int width, int height, int depth) : this(sdl2, width, height, depth, 0, 0, 0, 0)
+        internal SDLSurface(ISDL2 sdl2, int width, int height, int depth, SDLColor maskColor, uint aMask) : this(sdl2, sdl2.CreateRGBSurface(0, width, height, depth, maskColor.Red, maskColor.Green, maskColor.Blue, aMask))
         {
         }
 
-        public SDLSurface(ISDL2 sdl2, int width, int height, int depth, uint rMask, uint gMask, uint bMask, uint aMask) : this(sdl2, sdl2.CreateRGBSurface(0, width, height, depth, rMask, gMask, bMask, aMask))
-        {
-        }
-
-        public SDLSurface(ISDL2 sdl2, IntPtr surfacePointer)
+        internal SDLSurface(ISDL2 sdl2, IntPtr surfacePointer)
         {
             this.sdl2 = sdl2 ?? throw new ArgumentNullException(nameof(sdl2));
             this.SurfacePointer = surfacePointer;
@@ -34,15 +30,21 @@ namespace PhobiaX.SDL2
             Surface = Marshal.PtrToStructure<SDL.SDL_Surface>(surfacePointer);
         }
 
-        public void SetColorKey(byte r, byte g, byte b)
+        public void SetColorKey(SDLColor color)
         {
-            var keyColor = sdl2.MapRGB(this.Surface.format, r, g, b);
+            var keyColor = sdl2.MapRGB(this.Surface.format, color.Red, color.Green, color.Blue);
             sdl2.SetColorKey(this.SurfacePointer, (int)SDL.SDL_RLEACCEL | SDL.SDL_ENABLE, keyColor);
         }
 
-        public int BlitScaled(SDLSurface dst, IntPtr dstrect)
+        public int BlitScaled(SDLSurface dst)
         {
-            return sdl2.BlitScaled(this.SurfacePointer, IntPtr.Zero, dst.SurfacePointer, dstrect);
+            return sdl2.BlitScaled(this.SurfacePointer, IntPtr.Zero, dst.SurfacePointer, IntPtr.Zero);
+        }
+
+        public int BlitSurface(SDLSurface dst)
+        {
+            var surfaceRectangle = new SDL.SDL_Rect() { x = 0, y = 0, w = dst.Surface.w, h = dst.Surface.h };
+            return BlitSurface(dst, ref surfaceRectangle);
         }
 
         public int BlitSurface(SDLSurface dst, ref SDL_Rect dstrect)

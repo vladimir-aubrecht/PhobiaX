@@ -29,8 +29,9 @@ namespace PhobiaX.SDL2
         {
             logger?.LogDebug("Creating window");
 
+            sdl2.Init(SDL.SDL_INIT_VIDEO);
             var window = sdl2.CreateWindow(windowOptions.Title, windowOptions.X, windowOptions.Y, windowOptions.Width, windowOptions.Height, windowOptions.WindowFlags);
-
+            
             logger?.LogDebug("Window created");
 
             return window;
@@ -72,9 +73,9 @@ namespace PhobiaX.SDL2
             logger?.LogDebug("Disposed");
         }
 
-        public void Delay(uint miliseconds)
+        public void Delay(TimeSpan delay)
         {
-            sdl2.Delay(miliseconds);
+            sdl2.Delay((uint)delay.TotalMilliseconds);
         }
     }
 }

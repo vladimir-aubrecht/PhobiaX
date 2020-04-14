@@ -24,41 +24,6 @@ namespace PhobiaX.SDL2
             this.application = application ?? throw new ArgumentNullException(nameof(application));
             this.logger = logger;
             this.Handle = this.application.CreateRenderer(window, rendererOptions);
-
-            sdl2.Init(SDL.SDL_INIT_VIDEO);
-        }
-
-        public SDLSurface LoadSurface(string filePath)
-        {
-            var surface = sdl2.LoadBMP(filePath);
-
-            return new SDLSurface(sdl2, surface);
-        }
-
-        public SDLSurface CreateSurface(int width, int height)
-        {
-            return new SDLSurface(sdl2, width, height);
-        }
-
-        public SDLSurface ChangeSpecificSurfaceColorToBlack(SDLSurface surface, byte r, byte g, byte b)
-        {
-
-            var finalSurface = new SDLSurface(sdl2, surface.Surface.w, surface.Surface.h, 32, 0, 0, 0, 0);
-            surface.SetColorKey(r, g, b);
-
-            var surfaceRectangle = new SDL.SDL_Rect() { x = 0, y = 0, w = surface.Surface.w, h = surface.Surface.h };
-            surface.BlitSurface(finalSurface, ref surfaceRectangle);
-
-            return finalSurface;
-        }
-
-        public SDLSurface CreateResizedSurface(SDLSurface originalSurface, int newWidth)
-        {
-            var ratio = (float)originalSurface.Surface.w / originalSurface.Surface.h;
-            var resizedSurface = this.CreateSurface(newWidth, (int)(newWidth / ratio));
-            resizedSurface.SetColorKey(0, 0, 0);
-            originalSurface.BlitScaled(resizedSurface, IntPtr.Zero);
-            return resizedSurface;
         }
 
         public void Copy(IntPtr surfacePointer, IntPtr sourceRectangle, IntPtr destinationRectangle)

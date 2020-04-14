@@ -10,12 +10,14 @@ namespace PhobiaX
     public class AssetProvider : IDisposable
     {
         private readonly SDLRenderer renderer;
+        private readonly SDLSurfaceFactory surfaceFactory;
         private SurfaceAssets surfaces = new SurfaceAssets();
         private IDictionary<string, AnimatedSet> animations = new Dictionary<string, AnimatedSet>();
 
-        public AssetProvider(SDLRenderer renderer)
+        public AssetProvider(SDLRenderer renderer, SDLSurfaceFactory surfaceFactory)
         {
             this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
+            this.surfaceFactory = surfaceFactory ?? throw new ArgumentNullException(nameof(surfaceFactory));
         }
 
         public void Dispose()
@@ -61,11 +63,11 @@ namespace PhobiaX
 
                 foreach (var animation in set)
                 {
-                    var surface = renderer.LoadSurface(animation);
+                    var surface = surfaceFactory.LoadSurface(animation);
 
                     SDLSurface filteredSurface = FilterOutTransparencyColors(transparencyColors, surface);
 
-                    filteredSurface.SetColorKey(0, 0, 0);
+                    filteredSurface.SetColorKey(SDLColor.Black);
                     surfaces.Add(filteredSurface);
                 }
 
@@ -92,9 +94,12 @@ namespace PhobiaX
 
             foreach (var transparencyColor in transparencyColors)
             {
-                var newFilteredSurface = renderer.ChangeSpecificSurfaceColorToBlack(filteredSurface, transparencyColor.Red, transparencyColor.Green, transparencyColor.Blue);
+                var finalSurface = surfaceFactory.CreateSurface(filteredSurface.Surface.w, filteredSurface.Surface.h);
+                filteredSurface.SetColorKey(transparencyColor);
+                filteredSurface.BlitSurface(finalSurface);
                 filteredSurface.Dispose();
-                filteredSurface = newFilteredSurface;
+
+                filteredSurface = finalSurface;
             }
 
             return filteredSurface;
@@ -106,11 +111,11 @@ namespace PhobiaX
             {
                 var directoryName = Path.GetFileName(Path.GetDirectoryName(file));
                 var fileName = Path.GetFileNameWithoutExtension(file);
-                var surface = renderer.LoadSurface(file);
+                var surface = surfaceFactory.LoadSurface(file);
 
                 var filteredSurface = FilterOutTransparencyColors(transparencyColors, surface);
 
-                filteredSurface.SetColorKey(0, 0, 0);
+                filteredSurface.SetColorKey(SDLColor.Black);
 
                 surfaces.AddTexture($"{directoryName.ToLower()}_{fileName.ToLower()}", filteredSurface);
             }
