@@ -23,6 +23,7 @@ namespace PhobiaX
         private readonly SDLKeyboardStates keyboardProcessor;
         private readonly AssetProvider assetProvider;
         private readonly ActionBinder actionBinder;
+        private readonly SDLTextureFactory textureFactory;
         private readonly WindowOptions windowOptions;
         private EnemyManager enemyManager;
         private SDLSurface screenSurface;
@@ -39,7 +40,7 @@ namespace PhobiaX
         private AnimatedSet playerAnimatedSet;
         private AnimatedSet effectsAnimatedSet;
 
-        public Program(SDLApplication application, SDLRenderer renderer, SDLEventProcessor eventProcessor, SDLKeyboardStates keyboardProcessor, AssetProvider assetProvider, ActionBinder actionBinder, SDLSurfaceFactory surfaceFactory, WindowOptions windowOptions)
+        public Program(SDLApplication application, SDLRenderer renderer, SDLEventProcessor eventProcessor, SDLKeyboardStates keyboardProcessor, AssetProvider assetProvider, ActionBinder actionBinder, SDLSurfaceFactory surfaceFactory, SDLTextureFactory textureFactory, WindowOptions windowOptions)
         {
             this.application = application ?? throw new ArgumentNullException(nameof(application));
             this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
@@ -47,6 +48,7 @@ namespace PhobiaX
             this.keyboardProcessor = keyboardProcessor ?? throw new ArgumentNullException(nameof(keyboardProcessor));
             this.assetProvider = assetProvider ?? throw new ArgumentNullException(nameof(assetProvider));
             this.actionBinder = actionBinder ?? throw new ArgumentNullException(nameof(actionBinder));
+            this.textureFactory = textureFactory ?? throw new ArgumentNullException(nameof(textureFactory));
             this.windowOptions = windowOptions;
 
             screenSurface = surfaceFactory.CreateSurface(windowOptions.Width, windowOptions.Height);
@@ -199,10 +201,12 @@ namespace PhobiaX
             scorePlayer2.Draw(screenSurface);
             energyPlayer2.Draw(screenSurface);
 
-            renderer.Copy(screenSurface.SurfacePointer, IntPtr.Zero, IntPtr.Zero);
-            
-            renderer.Present();
-            application.Delay(renderingDelay);
+            using (var texture = textureFactory.CreateTexture(screenSurface))
+            {
+                texture.CopyToRenderer();
+                renderer.Present();
+                application.Delay(renderingDelay);
+            }
 
             eventProcessor.EvaluateEvents();
         }
@@ -234,6 +238,7 @@ namespace PhobiaX
             serviceCollection.AddSingleton<SDLWindow>();
             serviceCollection.AddSingleton<SDLRenderer>();
             serviceCollection.AddSingleton<SDLSurfaceFactory>();
+            serviceCollection.AddSingleton<SDLTextureFactory>();
 
             return serviceCollection.BuildServiceProvider();
         }

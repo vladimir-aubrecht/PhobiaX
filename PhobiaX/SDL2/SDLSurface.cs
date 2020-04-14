@@ -12,7 +12,7 @@ namespace PhobiaX.SDL2
 
         public SDL.SDL_Surface Surface { get; }
 
-        public IntPtr SurfacePointer { get; }
+        public IntPtr Handle { get; }
 
         internal SDLSurface(ISDL2 sdl2, int width, int height) : this(sdl2, width, height, 32, SDLColor.Black, 0)
         {
@@ -25,7 +25,7 @@ namespace PhobiaX.SDL2
         internal SDLSurface(ISDL2 sdl2, IntPtr surfacePointer)
         {
             this.sdl2 = sdl2 ?? throw new ArgumentNullException(nameof(sdl2));
-            this.SurfacePointer = surfacePointer;
+            this.Handle = surfacePointer;
 
             Surface = Marshal.PtrToStructure<SDL.SDL_Surface>(surfacePointer);
         }
@@ -33,12 +33,12 @@ namespace PhobiaX.SDL2
         public void SetColorKey(SDLColor color)
         {
             var keyColor = sdl2.MapRGB(this.Surface.format, color.Red, color.Green, color.Blue);
-            sdl2.SetColorKey(this.SurfacePointer, (int)SDL.SDL_RLEACCEL | SDL.SDL_ENABLE, keyColor);
+            sdl2.SetColorKey(this.Handle, (int)SDL.SDL_RLEACCEL | SDL.SDL_ENABLE, keyColor);
         }
 
         public int BlitScaled(SDLSurface dst)
         {
-            return sdl2.BlitScaled(this.SurfacePointer, IntPtr.Zero, dst.SurfacePointer, IntPtr.Zero);
+            return sdl2.BlitScaled(this.Handle, IntPtr.Zero, dst.Handle, IntPtr.Zero);
         }
 
         public int BlitSurface(SDLSurface dst)
@@ -49,12 +49,12 @@ namespace PhobiaX.SDL2
 
         public int BlitSurface(SDLSurface dst, ref SDL_Rect dstrect)
         {
-            return sdl2.BlitSurface(this.SurfacePointer, IntPtr.Zero, dst.SurfacePointer, ref dstrect);
+            return sdl2.BlitSurface(this.Handle, IntPtr.Zero, dst.Handle, ref dstrect);
         }
 
         public void Dispose()
         {
-            sdl2.FreeSurface(SurfacePointer);
+            sdl2.FreeSurface(Handle);
         }
     }
 }

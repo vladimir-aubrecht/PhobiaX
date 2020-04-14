@@ -26,13 +26,6 @@ namespace PhobiaX.SDL2
             this.Handle = this.application.CreateRenderer(window, rendererOptions);
         }
 
-        public void Copy(IntPtr surfacePointer, IntPtr sourceRectangle, IntPtr destinationRectangle)
-        {
-            var texture = sdl2.CreateTextureFromSurface(Handle, surfacePointer);
-            sdl2.RenderCopy(Handle, texture, sourceRectangle, destinationRectangle);
-            sdl2.DestroyTexture(texture);
-        }
-
         public void Present()
         {
             sdl2.RenderPresent(Handle);
