@@ -23,6 +23,12 @@ namespace PhobiaX.SDL2
             keysBuffer = sdl2.GetKeyboardState(out numkeys);
         }
 
+        public void Clear()
+        {
+            eventsToActionsMap.Clear();
+            eventsToActionsWhenNotPressedMap.Clear();
+        }
+
         public void RegisterEvents(SDL_Scancode scanCode, bool isReleased, Action eventMethod)
         {
             if (!isReleased)

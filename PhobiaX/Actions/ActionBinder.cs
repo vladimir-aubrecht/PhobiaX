@@ -18,6 +18,13 @@ namespace PhobiaX.Actions
             this.keyboardStates = keyboardStates ?? throw new ArgumentNullException(nameof(keyboardStates));
         }
 
+        public void Clear()
+        {
+            keyboardStates.Clear();
+            gameActions.Clear();
+            pressedKeys.Clear();
+        }
+
         public void AssignKeysToGameAction(GameAction action, bool isKeyReleased, params SDL.SDL_Scancode[] scancodes)
         {
             if (scancodes.Length == 1)

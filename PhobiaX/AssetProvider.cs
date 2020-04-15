@@ -9,14 +9,12 @@ namespace PhobiaX
 {
     public class AssetProvider : IDisposable
     {
-        private readonly SDLRenderer renderer;
         private readonly SDLSurfaceFactory surfaceFactory;
         private SurfaceAssets surfaces = new SurfaceAssets();
         private IDictionary<string, AnimatedSet> animations = new Dictionary<string, AnimatedSet>();
 
-        public AssetProvider(SDLRenderer renderer, SDLSurfaceFactory surfaceFactory)
+        public AssetProvider(SDLSurfaceFactory surfaceFactory)
         {
-            this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             this.surfaceFactory = surfaceFactory ?? throw new ArgumentNullException(nameof(surfaceFactory));
         }
 

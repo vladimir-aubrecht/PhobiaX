@@ -194,13 +194,5 @@ namespace PhobiaX
                 lastEnemyCleanup = DateTimeOffset.UtcNow;
             }
         }
-
-        public void Draw(SDLSurface surface)
-        {
-            foreach (var enemy in enemies)
-            {
-                enemy.Draw(surface);
-            }
-        }
     }
 }
