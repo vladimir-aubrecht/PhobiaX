@@ -37,15 +37,18 @@ namespace PhobiaX
             this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             this.windowOptions = windowOptions;
 
-            renderer.SetForRendering("ui", gameUI.GetGameObjects());
-
             Restart();
         }
 
         private void Restart()
         {
             gameLoop = gameLoopFactory.CreateGameLoop();
+            gameLoop.ActionBinder.RegisterPressAction(GameAction.Quit, () => application.Quit());
+            gameLoop.ActionBinder.RegisterPressAction(GameAction.Restart, () => Restart());
+
             this.enemyManager = new EnemyManager(assetProvider.GetAnimatedSurfaces()["aliens"], windowOptions, gameLoop.GetPlayer1GameObject(), gameLoop.GetPlayer2GameObject());
+            
+            renderer.SetForRendering("ui", gameUI.GetGameObjects());
             renderer.SetForRendering("heroes", new List<IGameObject> { gameLoop.GetPlayer1GameObject(), gameLoop.GetPlayer2GameObject() });
         }
 
