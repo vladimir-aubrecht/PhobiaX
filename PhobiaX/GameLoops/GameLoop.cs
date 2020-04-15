@@ -72,6 +72,9 @@ namespace PhobiaX.GameLoops
             this.ActionBinder.RegisterPressAction(GameAction.Player2RotateRight, () => player2GameObject.TurnRight());
             this.ActionBinder.RegisterPressAction(GameAction.Player2StopMoving, () => player2GameObject.Stop());
             this.ActionBinder.RegisterPressAction(GameAction.Player2Fire, () => player2GameObject.Shoot());
+
+            gameLoop.ActionBinder.RegisterPressAction(GameAction.Quit, () => application.Quit());
+            gameLoop.ActionBinder.RegisterPressAction(GameAction.Restart, () => Restart());
         }
 
         public int GetDifficulty()

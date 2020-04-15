@@ -47,9 +47,6 @@ namespace PhobiaX
             gameLoop = gameLoopFactory.CreateGameLoop();
             this.enemyManager = new EnemyManager(assetProvider.GetAnimatedSurfaces()["aliens"], windowOptions, gameLoop.GetPlayer1GameObject(), gameLoop.GetPlayer2GameObject());
             renderer.SetForRendering("heroes", new List<IGameObject> { gameLoop.GetPlayer1GameObject(), gameLoop.GetPlayer2GameObject() });
-
-            gameLoop.ActionBinder.RegisterPressAction(GameAction.Quit, () => application.Quit());
-            gameLoop.ActionBinder.RegisterPressAction(GameAction.Restart, () => Restart());
         }
 
         public void StartGameLoop()
