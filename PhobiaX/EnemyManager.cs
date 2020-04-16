@@ -24,9 +24,7 @@ namespace PhobiaX
             this.pathFinder = pathFinder ?? throw new ArgumentNullException(nameof(pathFinder));
             this.targets = targets ?? throw new ArgumentNullException(nameof(targets));
 
-            this.enemies = enemyFactory.CreateEnemies(amountOfEnemies, collissionObserver.IsObjectColliding);
-
-            collissionObserver.SetForObserving("enemies", this.enemies.Cast<IGameObject>().ToList());
+            RegenerateEnemies(0);
         }
 
         public void SetDesiredAmountOfEnemies(int amountOfEnemies)
@@ -91,19 +89,7 @@ namespace PhobiaX
                 }
             }
 
-            var currentAmountOfEnemies = enemies.Count - enemiesToDrop.Count;
-            if (currentAmountOfEnemies < this.amountOfEnemies)
-            {
-                var newEnemies = enemyFactory.CreateEnemies(this.amountOfEnemies - currentAmountOfEnemies, collissionObserver.IsObjectColliding);
-                
-                foreach (var enemy in newEnemies)
-                {
-                    enemies.Add(enemy);
-                }
-
-                collissionObserver.SetForObserving("enemies", this.enemies.Cast<IGameObject>().ToList());
-            }
-
+            RegenerateEnemies(enemies.Count - enemiesToDrop.Count);
 
             if ((DateTimeOffset.UtcNow - lastEnemyCleanup).TotalMilliseconds > 6000)
             {
@@ -117,6 +103,21 @@ namespace PhobiaX
                 collissionObserver.SetForObserving("enemies", this.enemies.Cast<IGameObject>().ToList());
 
                 lastEnemyCleanup = DateTimeOffset.UtcNow;
+            }
+        }
+
+        private void RegenerateEnemies(int currentAmountOfEnemies)
+        {
+            if (currentAmountOfEnemies < this.amountOfEnemies)
+            {
+                var newEnemies = enemyFactory.CreateEnemies(this.amountOfEnemies - currentAmountOfEnemies, collissionObserver.IsObjectColliding);
+
+                foreach (var enemy in newEnemies)
+                {
+                    enemies.Add(enemy);
+                }
+
+                collissionObserver.SetForObserving("enemies", this.enemies.Cast<IGameObject>().ToList());
             }
         }
     }
