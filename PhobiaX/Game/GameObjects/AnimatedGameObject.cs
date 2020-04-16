@@ -6,7 +6,7 @@ using PhobiaX.Assets;
 using PhobiaX.SDL2;
 using SDL2;
 
-namespace PhobiaX.GameObjects
+namespace PhobiaX.Game.GameObjects
 {
     public class AnimatedGameObject : IGameObject
     {
@@ -23,7 +23,7 @@ namespace PhobiaX.GameObjects
         private int previousFrameIndex = 0;
 
         public int Speed { get; set; } = 4;
-        private AnimatedSet AnimatedSet { get; }
+        private AnimatedCollection AnimatedSet { get; }
 
         public SDLSurface CurrentSurface => AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrame();
 
@@ -51,11 +51,11 @@ namespace PhobiaX.GameObjects
 
         public bool CanBeHit => !isHit;
 
-        public AnimatedGameObject(AnimatedSet animatedSurfaceAssets, int minimumMsForMove) : this(animatedSurfaceAssets, false, minimumMsForMove)
+        public AnimatedGameObject(AnimatedCollection animatedSurfaceAssets, int minimumMsForMove) : this(animatedSurfaceAssets, false, minimumMsForMove)
         {
         }
 
-        public AnimatedGameObject(AnimatedSet animatedSurfaceAssets, bool alwaysStopped, int minimumMsForMove)
+        public AnimatedGameObject(AnimatedCollection animatedSurfaceAssets, bool alwaysStopped, int minimumMsForMove)
         {
             this.AnimatedSet = animatedSurfaceAssets;
             this.alwaysStopped = alwaysStopped;
@@ -150,7 +150,7 @@ namespace PhobiaX.GameObjects
             this.AnimatedSet.GetCurrentAnimatedAsset().SetFrameIndex(previousFrameIndex);
         }
 
-        public bool TryMoveTowards(AnimatedGameObject gameObject)
+        public bool TryMoveTowards(IGameObject gameObject)
         {
             if (this.IsColliding(gameObject))
             {
@@ -210,7 +210,7 @@ namespace PhobiaX.GameObjects
             objectSurface.BlitSurface(destination, ref surfaceRectangle);
         }
 
-        private static double CalculateAngleTowardsGameObject(int x, int y, AnimatedGameObject gameObject)
+        private static double CalculateAngleTowardsGameObject(int x, int y, IGameObject gameObject)
         {
             double xDiff = gameObject.X - x;
             double yDiff = gameObject.Y - y;

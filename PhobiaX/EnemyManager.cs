@@ -1,77 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using PhobiaX.Assets;
-using PhobiaX.GameObjects;
-using PhobiaX.SDL2;
-using PhobiaX.SDL2.Options;
+using PhobiaX.Game.GameObjects;
+using PhobiaX.Physics;
 
 namespace PhobiaX
 {
     public class EnemyManager
     {
-        private readonly AnimatedSet animatedSet;
-        private readonly WindowOptions windowOptions;
+        private readonly EnemyFactory enemyFactory;
+        private readonly CollissionObserver collissionObserver;
+        private readonly PathFinder pathFinder;
         private readonly AnimatedGameObject[] targets;
-        private readonly IList<AnimatedGameObject> enemies = new List<AnimatedGameObject>();
+        private readonly IList<EnemyGameObject> enemies = new List<EnemyGameObject>();
         private readonly Random random = new Random();
         private DateTimeOffset lastEnemyCleanup = DateTimeOffset.UtcNow;
         private int amountOfEnemies = 5;
 
-        public EnemyManager(AnimatedSet animatedSet, WindowOptions windowOptions, params AnimatedGameObject[] targets)
+        public EnemyManager(EnemyFactory enemyFactory, CollissionObserver collissionObserver, PathFinder pathFinder, params AnimatedGameObject[] targets)
         {
-            this.animatedSet = animatedSet ?? throw new ArgumentNullException(nameof(animatedSet));
-            this.windowOptions = windowOptions;
+            this.enemyFactory = enemyFactory ?? throw new ArgumentNullException(nameof(enemyFactory));
+            this.collissionObserver = collissionObserver ?? throw new ArgumentNullException(nameof(collissionObserver));
+            this.pathFinder = pathFinder ?? throw new ArgumentNullException(nameof(pathFinder));
+            this.targets = targets ?? throw new ArgumentNullException(nameof(targets));
 
-            this.targets = targets;
+            this.enemies = enemyFactory.CreateEnemies(amountOfEnemies, collissionObserver.IsObjectColliding);
 
-            GenerateEnemies(amountOfEnemies);
+            collissionObserver.SetForObserving("enemies", this.enemies.Cast<IGameObject>().ToList());
         }
 
         public void SetDesiredAmountOfEnemies(int amountOfEnemies)
         {
             this.amountOfEnemies = amountOfEnemies;
-        }
-
-        private void GenerateEnemies(int amount)
-        {
-            for (int i = 0; i < amount; i++)
-            {
-                var enemy = new AnimatedGameObject(new AnimatedSet(animatedSet), 30);
-
-                var x = random.Next(windowOptions.Width);
-                var y = random.Next(windowOptions.Height);
-
-                var rnd = random.Next(100);
-                if (rnd <= 25)
-                {
-                    enemy.X = x;
-                }
-                else if (rnd > 25 && rnd <= 50)
-                {
-                    enemy.Y = y;
-                }
-                else if (rnd > 50 && rnd <= 75)
-                {
-                    enemy.X = windowOptions.Width - 50;
-                    enemy.Y = y;
-                }
-                else
-                {
-                    enemy.X = x;
-                    enemy.Y = windowOptions.Height - 50;
-                }
-
-                if (HasEnemyCollissionWithRestOfEnemies(enemy))
-                {
-                    i--;
-                    continue;
-                }
-
-                enemy.Speed = 3;
-
-                enemies.Add(enemy);
-            }
         }
 
         public IList<IGameObject> GetAllEnemies()
@@ -91,7 +51,7 @@ namespace PhobiaX
                     continue;
                 }
 
-                var closesestTarget = FindClosestTarget(enemy);
+                var closesestTarget = pathFinder.FindClosestTarget(enemy, targets.Where(i => i.CanBeHit).Cast<IGameObject>().ToList());
 
                 if (closesestTarget == null)
                 {
@@ -109,63 +69,19 @@ namespace PhobiaX
                     closesestTarget.Hit();
                 }
 
-                if (HasEnemyCollissionWithRestOfEnemies(enemy))
+                
+                if (collissionObserver.IsObjectColliding(enemy))
                 {
                     enemy.RollbackLastMove();
                 }
             }
         }
 
-        private bool HasEnemyCollissionWithRestOfEnemies(AnimatedGameObject testedEnemy)
-        {
-            var isColliding = false;
-            foreach (var enemy in enemies)
-            {
-                if (testedEnemy == enemy || !enemy.CanBeHit)
-                {
-                    continue;
-                }
-
-                isColliding |= testedEnemy.IsColliding(enemy);
-            }
-
-            return isColliding;
-        }
-
-        private AnimatedGameObject FindClosestTarget(AnimatedGameObject enemy)
-        {
-            var closestDistance = double.MaxValue;
-            var livingTargets = targets.Where(i => i.CanBeHit).ToArray();
-
-            if (livingTargets.Length == 0)
-            {
-                return null;
-            }
-
-            var closesestTarget = livingTargets[random.Next(livingTargets.Length)];
-
-            foreach (var target in livingTargets)
-            {
-                var xDiff = target.X - enemy.X;
-                var yDiff = target.Y - enemy.Y;
-
-                var distance = Math.Sqrt(xDiff * xDiff + yDiff * yDiff);
-
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closesestTarget = target;
-                }
-            }
-
-            return closesestTarget;
-        }
-
         public void MoveEnemies()
         {
             MoveToClosestTarget(70, 20);
 
-            var enemiesToDrop = new List<AnimatedGameObject>();
+            var enemiesToDrop = new List<EnemyGameObject>();
 
             foreach (var enemy in enemies)
             {
@@ -178,7 +94,14 @@ namespace PhobiaX
             var currentAmountOfEnemies = enemies.Count - enemiesToDrop.Count;
             if (currentAmountOfEnemies < this.amountOfEnemies)
             {
-                GenerateEnemies(this.amountOfEnemies - currentAmountOfEnemies);
+                var newEnemies = enemyFactory.CreateEnemies(this.amountOfEnemies - currentAmountOfEnemies, collissionObserver.IsObjectColliding);
+                
+                foreach (var enemy in newEnemies)
+                {
+                    enemies.Add(enemy);
+                }
+
+                collissionObserver.SetForObserving("enemies", this.enemies.Cast<IGameObject>().ToList());
             }
 
 
@@ -190,6 +113,8 @@ namespace PhobiaX
                 }
 
                 enemiesToDrop.Clear();
+
+                collissionObserver.SetForObserving("enemies", this.enemies.Cast<IGameObject>().ToList());
 
                 lastEnemyCleanup = DateTimeOffset.UtcNow;
             }

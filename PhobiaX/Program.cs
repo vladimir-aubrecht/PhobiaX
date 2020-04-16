@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PhobiaX.Actions;
-using PhobiaX.GameLoops;
-using PhobiaX.GameObjects;
+using PhobiaX.Assets;
+using PhobiaX.Game.GameLoops;
+using PhobiaX.Game.GameObjects;
+using PhobiaX.Game.UserInteface;
+using PhobiaX.Game.UserInterface;
+using PhobiaX.Graphics;
+using PhobiaX.Physics;
 using PhobiaX.SDL2;
 using PhobiaX.SDL2.Options;
 using PhobiaX.SDL2.Wrappers;
-using PhobiaX.UserInteface;
-using PhobiaX.UserInterface;
 using SDL2;
 
 namespace PhobiaX
@@ -19,37 +22,43 @@ namespace PhobiaX
         private readonly TimeSpan renderingDelay = TimeSpan.FromMilliseconds(20);
         private readonly SDLApplication application;
         private readonly SDLEventProcessor eventProcessor;
-        private readonly AssetProvider assetProvider;
         private readonly GameLoopFactory gameLoopFactory;
+        private readonly EnemyFactory enemyFactory;
         private readonly Renderer renderer;
-        private readonly WindowOptions windowOptions;
+        private readonly CollissionObserver collissionObserver;
+        private readonly PathFinder pathFinder;
         private EnemyManager enemyManager;
         private GameUI gameUI;
         private GameLoop gameLoop;
 
-        public Program(SDLApplication application, SDLEventProcessor eventProcessor, AssetProvider assetProvider, GameUI gameUI, GameLoopFactory gameLoopFactory, Renderer renderer, WindowOptions windowOptions)
+        public Program(SDLApplication application, SDLEventProcessor eventProcessor, GameUI gameUI, GameLoopFactory gameLoopFactory, EnemyFactory enemyFactory, Renderer renderer, CollissionObserver collissionObserver, PathFinder pathFinder)
         {
             this.application = application ?? throw new ArgumentNullException(nameof(application));
             this.eventProcessor = eventProcessor ?? throw new ArgumentNullException(nameof(eventProcessor));
-            this.assetProvider = assetProvider ?? throw new ArgumentNullException(nameof(assetProvider));
             this.gameUI = gameUI ?? throw new ArgumentNullException(nameof(gameUI));
             this.gameLoopFactory = gameLoopFactory ?? throw new ArgumentNullException(nameof(gameLoopFactory));
+            this.enemyFactory = enemyFactory ?? throw new ArgumentNullException(nameof(enemyFactory));
             this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
-            this.windowOptions = windowOptions;
-
+            this.collissionObserver = collissionObserver ?? throw new ArgumentNullException(nameof(collissionObserver));
+            this.pathFinder = pathFinder ?? throw new ArgumentNullException(nameof(pathFinder));
             Restart();
         }
 
         private void Restart()
         {
             gameLoop = gameLoopFactory.CreateGameLoop();
+
+            gameLoop.ActionBinder.AssignKeysToGameAction(GameAction.Quit, false, SDL.SDL_Scancode.SDL_SCANCODE_Q);
+            gameLoop.ActionBinder.AssignKeysToGameAction(GameAction.Restart, false, SDL.SDL_Scancode.SDL_SCANCODE_F2);
             gameLoop.ActionBinder.RegisterPressAction(GameAction.Quit, () => application.Quit());
             gameLoop.ActionBinder.RegisterPressAction(GameAction.Restart, () => Restart());
 
-            this.enemyManager = new EnemyManager(assetProvider.GetAnimatedSurfaces()["aliens"], windowOptions, gameLoop.GetPlayer1GameObject(), gameLoop.GetPlayer2GameObject());
+            collissionObserver.SetForObserving("players", new List<IGameObject> { gameLoop.GetPlayer1GameObject(), gameLoop.GetPlayer2GameObject() });
+
+            this.enemyManager = new EnemyManager(enemyFactory, collissionObserver, pathFinder, gameLoop.GetPlayer1GameObject(), gameLoop.GetPlayer2GameObject());
             
             renderer.SetForRendering("ui", gameUI.GetGameObjects());
-            renderer.SetForRendering("heroes", new List<IGameObject> { gameLoop.GetPlayer1GameObject(), gameLoop.GetPlayer2GameObject() });
+            renderer.SetForRendering("players", new List<IGameObject> { gameLoop.GetPlayer1GameObject(), gameLoop.GetPlayer2GameObject() });
         }
 
         public void StartGameLoop()
@@ -113,8 +122,11 @@ namespace PhobiaX
             serviceCollection.AddSingleton<SDLSurfaceFactory>();
             serviceCollection.AddSingleton<SDLTextureFactory>();
             serviceCollection.AddSingleton<Renderer>();
+            serviceCollection.AddSingleton<CollissionObserver>();
             serviceCollection.AddSingleton<UserIntefaceFactory>();
             serviceCollection.AddSingleton<GameLoopFactory>();
+            serviceCollection.AddSingleton<EnemyFactory>();
+            serviceCollection.AddSingleton<PathFinder>();
             serviceCollection.AddSingleton<GameUI>((sc) => sc.GetService<UserIntefaceFactory>().CreateGameUI());
 
             return serviceCollection.BuildServiceProvider();

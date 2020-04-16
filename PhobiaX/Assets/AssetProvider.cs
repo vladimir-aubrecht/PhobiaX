@@ -5,13 +5,13 @@ using System.Linq;
 using PhobiaX.Assets;
 using PhobiaX.SDL2;
 
-namespace PhobiaX
+namespace PhobiaX.Assets
 {
     public class AssetProvider : IDisposable
     {
         private readonly SDLSurfaceFactory surfaceFactory;
         private SurfaceAssets surfaces = new SurfaceAssets();
-        private IDictionary<string, AnimatedSet> animations = new Dictionary<string, AnimatedSet>();
+        private IDictionary<string, AnimatedCollection> animations = new Dictionary<string, AnimatedCollection>();
 
         public AssetProvider(SDLSurfaceFactory surfaceFactory)
         {
@@ -79,7 +79,7 @@ namespace PhobiaX
                 }
                 else
                 {
-                    var animatedAsset = new AnimatedSet(parentFolderName, defaultSetName, finalSetName, isFinalSetAnimation);
+                    var animatedAsset = new AnimatedCollection(parentFolderName, defaultSetName, finalSetName, isFinalSetAnimation);
                     animatedAsset.AddAnimation(folderName, surfaces);
                     animations.Add(parentFolderName, animatedAsset);
                 }
@@ -124,7 +124,7 @@ namespace PhobiaX
             return surfaces;
         }
 
-        public IDictionary<string, AnimatedSet> GetAnimatedSurfaces()
+        public IDictionary<string, AnimatedCollection> GetAnimatedSurfaces()
         {
             return animations;
         }

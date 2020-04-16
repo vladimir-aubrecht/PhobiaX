@@ -1,11 +1,10 @@
-﻿using PhobiaX.GameObjects;
+﻿using PhobiaX.Game.GameObjects;
 using PhobiaX.SDL2;
 using PhobiaX.SDL2.Options;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace PhobiaX
+namespace PhobiaX.Graphics
 {
 	public class Renderer : IDisposable
 	{

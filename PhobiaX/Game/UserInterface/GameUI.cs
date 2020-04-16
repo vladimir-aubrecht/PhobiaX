@@ -1,9 +1,9 @@
-﻿using PhobiaX.GameObjects;
+﻿using PhobiaX.Game.GameObjects;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PhobiaX.UserInterface
+namespace PhobiaX.Game.UserInterface
 {
 	public class GameUI
 	{

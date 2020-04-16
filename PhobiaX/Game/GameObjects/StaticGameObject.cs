@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PhobiaX.GameObjects
+namespace PhobiaX.Game.GameObjects
 {
 	public class StaticGameObject : IGameObject
 	{

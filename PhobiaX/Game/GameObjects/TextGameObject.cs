@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace PhobiaX.GameObjects
+namespace PhobiaX.Game.GameObjects
 {
 	public class TextGameObject : IGameObject
 	{

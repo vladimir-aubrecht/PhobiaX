@@ -5,18 +5,18 @@ using PhobiaX.SDL2;
 
 namespace PhobiaX.Assets
 {
-    public class AnimatedSet : IDisposable
+    public class AnimatedCollection : IDisposable
     {
         private readonly string collectionName;
         private readonly string defaultSetName;
         private readonly string finalSetName;
-        private Dictionary<string, AnimatedAsset> animations = new Dictionary<string, AnimatedAsset>();
+        private IDictionary<string, AnimatedAsset> animations = new Dictionary<string, AnimatedAsset>();
         private int frameIndex = 0;
         private bool useOnlyDefaultSetCollection;
 
         public bool IsFinalSetAnimation { get; }
 
-        public AnimatedSet(AnimatedSet animatedSet)
+        public AnimatedCollection(AnimatedCollection animatedSet)
         {
             this.collectionName = animatedSet.collectionName;
             this.defaultSetName = animatedSet.defaultSetName;
@@ -27,11 +27,11 @@ namespace PhobiaX.Assets
             this.IsFinalSetAnimation = animatedSet.IsFinalSetAnimation;
         }
 
-        public AnimatedSet(string collectionName, string defaultSetName, string finalSetName, bool isFinalSetAnimation) : this(collectionName, defaultSetName, finalSetName, false, isFinalSetAnimation)
+        public AnimatedCollection(string collectionName, string defaultSetName, string finalSetName, bool isFinalSetAnimation) : this(collectionName, defaultSetName, finalSetName, false, isFinalSetAnimation)
         {
         }
 
-        public AnimatedSet(string collectionName, string defaultSetName, string finalSetName, bool useOnlyDefaultSetCollection, bool isFinalSetAnimation)
+        public AnimatedCollection(string collectionName, string defaultSetName, string finalSetName, bool useOnlyDefaultSetCollection, bool isFinalSetAnimation)
         {
             this.collectionName = collectionName ?? throw new ArgumentNullException(nameof(collectionName));
             this.defaultSetName = defaultSetName ?? throw new ArgumentNullException(nameof(defaultSetName));

@@ -18,8 +18,7 @@
     </ItemGroup>
     <ItemGroup>
         <Folder Include="SDL2\Wrappers\" />
-        <Folder Include="Assets\" />
-        <Folder Include="Actions\" />
+        <Folder Include="Inputs\" />
         <Folder Include="SDL2\Options\" />
     </ItemGroup>
     <ItemGroup>

@@ -1,13 +1,11 @@
 ﻿using PhobiaX.Actions;
-using PhobiaX.GameObjects;
+using PhobiaX.Game.GameObjects;
+using PhobiaX.Game.UserInterface;
 using PhobiaX.SDL2;
-using PhobiaX.UserInterface;
 using SDL2;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace PhobiaX.GameLoops
+namespace PhobiaX.Game.GameLoops
 {
 	public class GameLoop
 	{
@@ -42,9 +40,6 @@ namespace PhobiaX.GameLoops
 
         private void InitKeyboardController()
         {
-            this.ActionBinder.AssignKeysToGameAction(GameAction.Quit, false, SDL.SDL_Scancode.SDL_SCANCODE_Q);
-            this.ActionBinder.AssignKeysToGameAction(GameAction.Restart, false, SDL.SDL_Scancode.SDL_SCANCODE_F2);
-
             this.ActionBinder.AssignKeysToGameAction(GameAction.Player1RotateLeft, false, SDL.SDL_Scancode.SDL_SCANCODE_LEFT);
             this.ActionBinder.AssignKeysToGameAction(GameAction.Player1RotateRight, false, SDL.SDL_Scancode.SDL_SCANCODE_RIGHT);
             this.ActionBinder.AssignKeysToGameAction(GameAction.Player1MoveForward, false, SDL.SDL_Scancode.SDL_SCANCODE_UP);

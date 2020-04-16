@@ -4,11 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PhobiaX.GameObjects
+namespace PhobiaX.Game.GameObjects
 {
 	public class PlayerGameObject : AnimatedGameObject
 	{
-		private readonly AnimatedSet effectsAnimatedSet;
+		private readonly AnimatedCollection effectsAnimatedSet;
 
 		private IList<EffectGameObject> rocketsToDrop = new List<EffectGameObject>();
 		private IList<EffectGameObject> rockets = new List<EffectGameObject>();
@@ -16,7 +16,7 @@ namespace PhobiaX.GameObjects
 		public int Score { get; private set; } = 0;
 		public int Life { get; private set; } = 100;
 
-		public PlayerGameObject(AnimatedSet playerAnimatedSet, AnimatedSet effectsAnimatedSet) : base(playerAnimatedSet, false, 0)
+		public PlayerGameObject(AnimatedCollection playerAnimatedSet, AnimatedCollection effectsAnimatedSet) : base(playerAnimatedSet, false, 0)
 		{
 			this.effectsAnimatedSet = effectsAnimatedSet ?? throw new ArgumentNullException(nameof(effectsAnimatedSet));
 		}
@@ -28,7 +28,7 @@ namespace PhobiaX.GameObjects
 				return;
 			}
 			
-			var rocket = new EffectGameObject(new AnimatedSet(effectsAnimatedSet), this);
+			var rocket = new EffectGameObject(new AnimatedCollection(effectsAnimatedSet), this);
 			rocket.Speed = 12;
 
 			if ((DateTimeOffset.UtcNow - lastShoot).TotalMilliseconds > 300)
