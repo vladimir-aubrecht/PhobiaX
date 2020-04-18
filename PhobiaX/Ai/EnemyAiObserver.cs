@@ -16,20 +16,13 @@ namespace PhobiaX.Ai
 		private readonly GameObjectFactory gameObjectFactory;
 		private IList<EnemyGameObject> enemies = new List<EnemyGameObject>();
 		private IList<IGameObject> targets = new List<IGameObject>();
-		private int desiredAmountOfEnemies;
-
-		private IList<Action<IGameObject>> callbacks = new List<Action<IGameObject>>();
+		private int desiredAmountOfEnemies = 1;
 
 		public EnemyAiObserver(CollissionObserver collissionObserver, PathFinder pathFinder, GameObjectFactory gameObjectFactory)
 		{
 			this.collissionObserver = collissionObserver ?? throw new ArgumentNullException(nameof(collissionObserver));
 			this.pathFinder = pathFinder ?? throw new ArgumentNullException(nameof(pathFinder));
 			this.gameObjectFactory = gameObjectFactory ?? throw new ArgumentNullException(nameof(gameObjectFactory));
-		}
-
-		public void EnemyDiedCallback(Action<IGameObject> callback)
-		{
-			callbacks.Add(callback);
 		}
 
 		public void SetAmountOfEnemies(int amountOfEnemies)
@@ -51,7 +44,6 @@ namespace PhobiaX.Ai
 		{
 			RegenerateEnemies(desiredAmountOfEnemies);
 			MoveToClosestTarget(70, 20);
-			FindDeadEnemies();
 		}
 
 		private void MoveToClosestTarget(int probabilityOfNoMove, int percentageOfEnemiesWhichMustMove)
@@ -98,11 +90,12 @@ namespace PhobiaX.Ai
 		{
 			if (enemiesCount > this.enemies.Count)
 			{
-				var newEnemies = gameObjectFactory.CreateEnemies(enemiesCount - this.enemies.Count, (enemy) => collissionObserver.FindCollidingObjects(enemy).Count > 0);
-
-				foreach (var enemy in newEnemies)
+				foreach (var enemy in gameObjectFactory.CreateEnemies(enemiesCount - this.enemies.Count))
 				{
-					enemies.Add(enemy);
+					do
+					{
+						enemy.FindRandomStartLocation();
+					} while (collissionObserver.FindCollidingObjects(enemy).Where(i => i.CanCollide).Count() > 0);
 				}
 			}
 		}
@@ -121,25 +114,6 @@ namespace PhobiaX.Ai
 		{
 			this.enemies.Clear();
 			this.targets.Clear();
-		}
-
-		private void FindDeadEnemies()
-		{
-			foreach (var enemy in enemies)
-			{
-				if (!enemy.CanCollide)
-				{
-					EnemyDied(enemy);
-				}
-			}
-		}
-
-		private void EnemyDied(EnemyGameObject enemy)
-		{
-			foreach (var callback in callbacks)
-			{
-				callback(enemy);
-			}
 		}
 	}
 }

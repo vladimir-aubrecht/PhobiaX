@@ -26,20 +26,20 @@ namespace PhobiaX
         private readonly SDLApplication application;
         private readonly SDLEventProcessor eventProcessor;
         private readonly GameGarbageObserver gameGarbageObserver;
+        private readonly UserIntefaceFactory userIntefaceFactory;
         private readonly GameLoopFactory gameLoopFactory;
         private readonly EnemyAiObserver enemyAiObserver;
         private readonly GameObjectFactory gameObjectFactory;
         private readonly Renderer renderer;
         private readonly CollissionObserver collissionObserver;
-        private GameUI gameUI;
         private GameLoop gameLoop;
 
-        public Program(SDLApplication application, SDLEventProcessor eventProcessor, GameGarbageObserver gameGarbageObserver, GameUI gameUI, GameLoopFactory gameLoopFactory, EnemyAiObserver enemyAiObserver, GameObjectFactory gameObjectFactory, Renderer renderer, CollissionObserver collissionObserver)
+        public Program(SDLApplication application, SDLEventProcessor eventProcessor, GameGarbageObserver gameGarbageObserver, UserIntefaceFactory userIntefaceFactory, GameLoopFactory gameLoopFactory, EnemyAiObserver enemyAiObserver, GameObjectFactory gameObjectFactory, Renderer renderer, CollissionObserver collissionObserver)
         {
             this.application = application ?? throw new ArgumentNullException(nameof(application));
             this.eventProcessor = eventProcessor ?? throw new ArgumentNullException(nameof(eventProcessor));
             this.gameGarbageObserver = gameGarbageObserver ?? throw new ArgumentNullException(nameof(gameGarbageObserver));
-            this.gameUI = gameUI ?? throw new ArgumentNullException(nameof(gameUI));
+            this.userIntefaceFactory = userIntefaceFactory ?? throw new ArgumentNullException(nameof(userIntefaceFactory));
             this.gameLoopFactory = gameLoopFactory ?? throw new ArgumentNullException(nameof(gameLoopFactory));
             this.enemyAiObserver = enemyAiObserver ?? throw new ArgumentNullException(nameof(enemyAiObserver));
             this.gameObjectFactory = gameObjectFactory ?? throw new ArgumentNullException(nameof(gameObjectFactory));
@@ -58,28 +58,38 @@ namespace PhobiaX
             gameGarbageObserver.AddCleanableObject(collissionObserver);
             gameGarbageObserver.AddCleanableObject(enemyAiObserver);
 
-            enemyAiObserver.EnemyDiedCallback((gameObject) => gameGarbageObserver.Observe(gameObject));
-
-            foreach (var obj in gameUI.GetGameObjects())
-            {
-                renderer.Add(obj);
-            }
-
             gameObjectFactory.OnCreateCallback((gameObject) => {
-                collissionObserver.Observe(gameObject);
+                collissionObserver.ObserveCollission(gameObject);
                 renderer.Add(gameObject);
 
                 if (gameObject is EnemyGameObject)
                 {
                     enemyAiObserver.Observe(gameObject as EnemyGameObject);
+                    (gameObject as EnemyGameObject).DestroyCallback = () => gameGarbageObserver.Observe(gameObject);
                 }
 
                 if (gameObject is PlayerGameObject)
                 {
                     enemyAiObserver.AddTarget(gameObject);
                 }
+
+                if (gameObject is RocketGameObject)
+                {
+                    (gameObject as RocketGameObject).DestroyCallback = () => gameGarbageObserver.Observe(gameObject);
+                }
             });
-            
+
+            var gameUI = userIntefaceFactory.CreateGameUI();
+            gameUI.SetPlayerLife(0, 100);
+            gameUI.SetPlayerLife(1, 100);
+            gameUI.SetPlayerScore(0, 0);
+            gameUI.SetPlayerScore(1, 0);
+
+            foreach (var obj in gameUI.GetGameObjects())
+            {
+                renderer.Add(obj);
+            }
+
             gameLoop = gameLoopFactory.CreateGameLoop();
 
             gameLoop.ActionBinder.AssignKeysToGameAction(GameAction.Quit, false, SDL.SDL_Scancode.SDL_SCANCODE_Q);
@@ -87,7 +97,15 @@ namespace PhobiaX
             gameLoop.ActionBinder.RegisterPressAction(GameAction.Quit, () => application.Quit());
             gameLoop.ActionBinder.RegisterPressAction(GameAction.Restart, () => Restart());
 
-            collissionObserver.OnObserveCallback((gameObject, colliders) => {
+            collissionObserver.OnCollissionCallback((gameObject, colliders) => {
+
+                if (!colliders.OfType<MapGameObject>().Any())
+                {
+                    if (gameObject is RocketGameObject)
+                    {
+                        gameGarbageObserver.Observe(gameObject);
+                    }
+                }
 
                 colliders = colliders.Where(i => i.CanCollide).ToList();
                 if (!gameObject.CanCollide || !colliders.Any())
@@ -98,6 +116,9 @@ namespace PhobiaX
                 if (gameObject is PlayerGameObject && colliders.OfType<EnemyGameObject>().Any())
                 {
                     gameObject.Hit();
+
+                    var player = (gameObject as PlayerGameObject);
+                    gameUI.SetPlayerLife(player.PlayerNumber, player.Life);
                 }
                 else if (gameObject is EnemyGameObject && colliders.OfType<RocketGameObject>().Any())
                 {
@@ -106,18 +127,16 @@ namespace PhobiaX
                     foreach (var rocket in colliders.OfType<RocketGameObject>())
                     {
                         var castedRocket = rocket as RocketGameObject;
-                        (castedRocket.Owner as PlayerGameObject).Score++;
+                        var player = (castedRocket.Owner as PlayerGameObject);
+                        player.Score++;
+                        gameUI.SetPlayerScore(player.PlayerNumber, player.Score);
+                        rocket.Hit();
                     }
                 }
 
                 if (gameObject is EnemyGameObject)
                 {
-                    (gameObject as EnemyGameObject).Stop();
-                }
-
-                if (gameObject is RocketGameObject)
-                {
-                    gameObject.Hit();
+               //     (gameObject as EnemyGameObject).Stop();
                 }
             });
         }
@@ -179,7 +198,6 @@ namespace PhobiaX
             serviceCollection.AddSingleton<TimeThrottler>();
             serviceCollection.AddSingleton<EnemyAiObserver>();
             serviceCollection.AddSingleton<GameGarbageObserver>();
-            serviceCollection.AddSingleton<GameUI>((sc) => sc.GetService<UserIntefaceFactory>().CreateGameUI());
 
             return serviceCollection.BuildServiceProvider();
         }

@@ -3,6 +3,7 @@ using PhobiaX.SDL2;
 using SDL2;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -10,6 +11,7 @@ namespace PhobiaX.Game.GameObjects
 {
 	public class TextGameObject : IGameObject
 	{
+		public Guid Id { get; } = Guid.NewGuid();
 		private string text;
 		private readonly IDictionary<char, SDLSurface> symbolSurfaces;
 		private readonly SDLSurfaceFactory surfaceFactory;

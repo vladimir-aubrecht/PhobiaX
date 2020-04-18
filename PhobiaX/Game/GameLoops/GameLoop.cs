@@ -13,12 +13,11 @@ namespace PhobiaX.Game.GameLoops
         private readonly GameObjectFactory gameObjectFactory;
         private readonly PlayerGameObject player1GameObject;
 		private readonly PlayerGameObject player2GameObject;
-        private readonly GameUI gameUI;
 
         public ActionBinder ActionBinder { get; }
 		private SDLKeyboardStates KeyboardStates { get; }
 
-        public GameLoop(TimeThrottler timeThrottler, GameObjectFactory gameObjectFactory, PlayerGameObject player1GameObject, PlayerGameObject player2GameObject, ActionBinder actionBinder, SDLKeyboardStates keyboardStates, GameUI gameUI)
+        public GameLoop(TimeThrottler timeThrottler, GameObjectFactory gameObjectFactory, PlayerGameObject player1GameObject, PlayerGameObject player2GameObject, ActionBinder actionBinder, SDLKeyboardStates keyboardStates)
 		{
             this.timeThrottler = timeThrottler ?? throw new ArgumentNullException(nameof(timeThrottler));
             this.gameObjectFactory = gameObjectFactory ?? throw new ArgumentNullException(nameof(gameObjectFactory));
@@ -26,20 +25,9 @@ namespace PhobiaX.Game.GameLoops
 			this.player2GameObject = player2GameObject ?? throw new ArgumentNullException(nameof(player2GameObject));
 			this.ActionBinder = actionBinder ?? throw new ArgumentNullException(nameof(actionBinder));
 			this.KeyboardStates = keyboardStates ?? throw new ArgumentNullException(nameof(keyboardStates));
-            this.gameUI = gameUI ?? throw new ArgumentNullException(nameof(gameUI));
 
             InitKeyboardController();
         }
-
-		public PlayerGameObject GetPlayer1GameObject()
-		{
-			return this.player1GameObject;
-		}
-
-		public PlayerGameObject GetPlayer2GameObject()
-		{
-			return this.player2GameObject;
-		}
 
         private void InitKeyboardController()
         {
@@ -82,10 +70,10 @@ namespace PhobiaX.Game.GameLoops
         {
             this.KeyboardStates.ScanKeys();
 
-            gameUI.SetPlayer1Score(player1GameObject.Score);
+            /*gameUI.SetPlayer1Score(player1GameObject.Score);
             gameUI.SetPlayer2Score(player2GameObject.Score);
             gameUI.SetPlayer1Life(player1GameObject.Life);
-            gameUI.SetPlayer2Life(player2GameObject.Life);
+            gameUI.SetPlayer2Life(player2GameObject.Life);*/
         }
 
     }

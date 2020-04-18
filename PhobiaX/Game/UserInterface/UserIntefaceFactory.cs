@@ -64,7 +64,7 @@ namespace PhobiaX.Game.UserInteface
 			scorePlayer2 = new TextGameObject(scaledScoreBarSurface.Surface.w - 55, 38, symbolMap, surfaceFactory, maxWidth);
 			energyPlayer2 = new TextGameObject(energyBarX, 40, symbolMap, surfaceFactory, maxWidth + 15);
 
-			return new GameUI(map, scorePlayer1, scorePlayer2, energyPlayer1, energyPlayer2, scoreBar, energyBar);
+			return new GameUI(scorePlayer1, scorePlayer2, energyPlayer1, energyPlayer2, scoreBar, energyBar);
 		}
 
 		private static Dictionary<char, SDLSurface> CreateSymbolMap(SurfaceAssets surfaceAssets)

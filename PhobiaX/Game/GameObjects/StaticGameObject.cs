@@ -2,12 +2,14 @@
 using SDL2;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace PhobiaX.Game.GameObjects
 {
 	public class StaticGameObject : IGameObject
 	{
+		public Guid Id { get; } = Guid.NewGuid();
 		public int X { get; }
 		public int Y { get; }
 		public double Angle { get; }

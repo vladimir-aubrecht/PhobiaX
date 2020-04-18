@@ -7,6 +7,8 @@ namespace PhobiaX.Game.GameObjects
 {
 	public interface IGameObject
 	{
+		Guid Id { get; }
+
 		int X { get; }
 
 		int Y { get; }

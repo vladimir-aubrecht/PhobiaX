@@ -9,7 +9,6 @@ namespace PhobiaX
 {
 	public class GameObjectFactory
 	{
-        private readonly Random random = new Random();
         private readonly WindowOptions windowOptions;
         private readonly SDLSurfaceFactory surfaceFactory;
         private readonly AnimatedCollection enemyAnimatedSet;
@@ -81,49 +80,19 @@ namespace PhobiaX
 
         public EnemyGameObject CreateEnemy()
         {
-            var enemy = new EnemyGameObject(new AnimatedCollection(enemyAnimatedSet));
-
-            var x = random.Next(windowOptions.Width);
-            var y = random.Next(windowOptions.Height);
-
-            var rnd = random.Next(100);
-            if (rnd <= 25)
-            {
-                enemy.X = x;
-            }
-            else if (rnd > 25 && rnd <= 50)
-            {
-                enemy.Y = y;
-            }
-            else if (rnd > 50 && rnd <= 75)
-            {
-                enemy.X = windowOptions.Width - 50;
-                enemy.Y = y;
-            }
-            else
-            {
-                enemy.X = x;
-                enemy.Y = windowOptions.Height - 50;
-            }
+            var enemy = new EnemyGameObject(new AnimatedCollection(enemyAnimatedSet), windowOptions);
 
             TriggerCallback(enemy);
 
             return enemy;
         }
 
-        public IList<EnemyGameObject> CreateEnemies(int amount, Func<EnemyGameObject, bool> isValidEnemyFunc)
+        public IList<EnemyGameObject> CreateEnemies(int amount)
         {
             var enemies = new List<EnemyGameObject>(amount);
             for (int i = 0; i < amount; i++)
             {
                 var enemy = CreateEnemy();
-
-                if (isValidEnemyFunc(enemy))
-                {
-                    i--;
-                    continue;
-                }
-
                 enemies.Add(enemy);
             }
 

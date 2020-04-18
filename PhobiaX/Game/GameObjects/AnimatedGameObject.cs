@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Transactions;
 using PhobiaX.Assets;
@@ -10,6 +11,8 @@ namespace PhobiaX.Game.GameObjects
 {
     public class AnimatedGameObject : IGameObject
     {
+        public Guid Id { get; } = Guid.NewGuid();
+
         private const int defaultAngleOffset = 90;
         private const double CircleDegrees = 360;
 
@@ -22,7 +25,7 @@ namespace PhobiaX.Game.GameObjects
         private double previousAngle = 0;
         private int previousFrameIndex = 0;
 
-        public int Speed { get; set; } = 4;
+        public double Speed { get; set; } = 4;
         private AnimatedCollection AnimatedSet { get; }
 
         public SDLSurface CurrentSurface => AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrame();
@@ -36,6 +39,9 @@ namespace PhobiaX.Game.GameObjects
 
 
         private DateTimeOffset lastMovement = DateTimeOffset.MinValue;
+
+        public Action DestroyCallback { get; set; }
+        public Action MoveCallback { get; set; }
 
         public double Angle
         {
@@ -208,7 +214,7 @@ namespace PhobiaX.Game.GameObjects
             var angle = Modulo(Math.Atan(yDistance / xDistance) * 180 / Math.PI, CircleDegrees);
 
             // Left Down
-            if (xDiff < 0 && yDiff > 0)
+            if (xDiff < 0 && yDiff >= 0)
             {
                 return 180 + angle;
             }
@@ -218,7 +224,7 @@ namespace PhobiaX.Game.GameObjects
                 return 360 - angle;
             }
             // Left Up
-            else if (xDiff < 0 && yDiff < 0)
+            else if (xDiff < 0 && yDiff <= 0)
             {
                 return 180 - angle;
             }
@@ -255,6 +261,11 @@ namespace PhobiaX.Game.GameObjects
         public virtual void Hit()
         {
             isHit = true;
+        }
+
+        public override string ToString()
+        {
+            return $"Type: {this.GetType().Name} {nameof(Id)}: {Id} {nameof(CanCollide)}: {CanCollide}";
         }
     }
 }

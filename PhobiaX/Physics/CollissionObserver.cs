@@ -11,12 +11,12 @@ namespace PhobiaX.Physics
 		protected IList<IGameObject> gameObjects = new List<IGameObject>();
 		protected IList<Action<IGameObject, IList<IGameObject>>> callbacks = new List<Action<IGameObject, IList<IGameObject>>>();
 
-		public void OnObserveCallback(Action<IGameObject, IList<IGameObject>> callback)
+		public void OnCollissionCallback(Action<IGameObject, IList<IGameObject>> callback)
 		{
 			callbacks.Add(callback);
 		}
 
-		public void Observe(IGameObject gameObject)
+		public void ObserveCollission(IGameObject gameObject)
 		{
 			this.gameObjects.Add(gameObject);
 		}
@@ -38,11 +38,7 @@ namespace PhobiaX.Physics
 			foreach (var gameObject in gameObjects)
 			{
 				var collidingObjects = FindCollidingObjects(gameObject);
-					
-				if (collidingObjects.Count > 0)
-				{
-					collides.Add(gameObject, collidingObjects);
-				}
+				collides.Add(gameObject, collidingObjects);
 			}
 
 			foreach (var collide in collides)

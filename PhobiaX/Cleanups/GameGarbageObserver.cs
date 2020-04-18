@@ -13,7 +13,10 @@ namespace PhobiaX.Cleanups
 
 		public void Observe(IGameObject gameObject)
 		{
-			this.gameObjects.Add(gameObject);
+			if (!this.gameObjects.Contains(gameObject))
+			{
+				this.gameObjects.Add(gameObject);
+			}
 		}
 
 		public virtual void Cleanup(IGameObject gameObject)
@@ -53,6 +56,8 @@ namespace PhobiaX.Cleanups
 						cleanableObject.Cleanup(obj);
 					}
 				}
+
+				gameObjects.Clear();
 			});
 		}
 	}

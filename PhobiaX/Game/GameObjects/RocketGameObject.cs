@@ -8,6 +8,8 @@ namespace PhobiaX.Game.GameObjects
 {
 	public class RocketGameObject : EffectGameObject
 	{
+		public Action DestroyCallback { get; set; }
+
 		public RocketGameObject(AnimatedCollection animatedSet, IGameObject owner) : base(animatedSet, owner)
 		{
 			Speed = 12;
@@ -15,8 +17,18 @@ namespace PhobiaX.Game.GameObjects
 
 		public override void Draw(SDLSurface destination)
 		{
-			this.MoveForward();
+			if (CanCollide)
+			{
+				this.MoveForward();
+			}
+
 			base.Draw(destination);
+		}
+
+		public override void Hit()
+		{
+			base.Hit();
+			DestroyCallback();
 		}
 	}
 }
