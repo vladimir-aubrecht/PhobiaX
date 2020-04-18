@@ -79,11 +79,8 @@ namespace PhobiaX
                 }
             });
 
-            var gameUI = userIntefaceFactory.CreateGameUI();
-            gameUI.SetPlayerLife(0, 100);
-            gameUI.SetPlayerLife(1, 100);
-            gameUI.SetPlayerScore(0, 0);
-            gameUI.SetPlayerScore(1, 0);
+            var scoreUI = userIntefaceFactory.CreateScoreUI(0, 100);
+            scoreUI.SetPlayerLife(0, 100);
 
             gameLoop = gameLoopFactory.CreateGameLoop();
 
@@ -113,7 +110,7 @@ namespace PhobiaX
                     gameObject.Hit();
 
                     var player = (gameObject as PlayerGameObject);
-                    gameUI.SetPlayerLife(player.PlayerNumber, player.Life);
+                    scoreUI.SetPlayerLife(player.PlayerNumber, player.Life);
                 }
                 else if (gameObject is EnemyGameObject && colliders.OfType<RocketGameObject>().Any())
                 {
@@ -124,7 +121,7 @@ namespace PhobiaX
                         var castedRocket = rocket as RocketGameObject;
                         var player = (castedRocket.Owner as PlayerGameObject);
                         player.Score++;
-                        gameUI.SetPlayerScore(player.PlayerNumber, player.Score);
+                        scoreUI.SetPlayerScore(player.PlayerNumber, player.Score);
                         rocket.Hit();
                     }
                 }
@@ -146,12 +143,9 @@ namespace PhobiaX
 
         private void DoGameLoop()
         {
-            enemyAiObserver.SetAmountOfEnemies(gameLoop.GetDifficulty());
-
             gameLoop.Evaluate();
+            
             eventProcessor.Evaluate();
-            collissionObserver.Evaluate();
-            enemyAiObserver.Evaluate();
             renderer.Evaluate();
             gameGarbageObserver.Evaluate();
 

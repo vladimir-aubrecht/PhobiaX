@@ -1,9 +1,12 @@
 ﻿using PhobiaX.Actions;
+using PhobiaX.Ai;
 using PhobiaX.Game.GameObjects;
 using PhobiaX.Game.UserInterface;
+using PhobiaX.Physics;
 using PhobiaX.SDL2;
 using SDL2;
 using System;
+using System.Collections.Generic;
 
 namespace PhobiaX.Game.GameLoops
 {
@@ -11,21 +14,22 @@ namespace PhobiaX.Game.GameLoops
 	{
         private readonly TimeThrottler timeThrottler;
         private readonly GameObjectFactory gameObjectFactory;
-        private readonly PlayerGameObject player1GameObject;
-		private readonly PlayerGameObject player2GameObject;
+        private readonly IList<PlayerGameObject> playerGameObjects;
+        private readonly CollissionObserver collissionObserver;
+        private readonly EnemyAiObserver enemyAiObserver;
 
         public ActionBinder ActionBinder { get; }
 		private SDLKeyboardStates KeyboardStates { get; }
 
-        public GameLoop(TimeThrottler timeThrottler, GameObjectFactory gameObjectFactory, PlayerGameObject player1GameObject, PlayerGameObject player2GameObject, ActionBinder actionBinder, SDLKeyboardStates keyboardStates)
+        public GameLoop(TimeThrottler timeThrottler, GameObjectFactory gameObjectFactory, IList<PlayerGameObject> playerGameObjects, ActionBinder actionBinder, SDLKeyboardStates keyboardStates, CollissionObserver collissionObserver, EnemyAiObserver enemyAiObserver)
 		{
             this.timeThrottler = timeThrottler ?? throw new ArgumentNullException(nameof(timeThrottler));
             this.gameObjectFactory = gameObjectFactory ?? throw new ArgumentNullException(nameof(gameObjectFactory));
-            this.player1GameObject = player1GameObject ?? throw new ArgumentNullException(nameof(player1GameObject));
-			this.player2GameObject = player2GameObject ?? throw new ArgumentNullException(nameof(player2GameObject));
+            this.playerGameObjects = playerGameObjects ?? throw new ArgumentNullException(nameof(playerGameObjects));
 			this.ActionBinder = actionBinder ?? throw new ArgumentNullException(nameof(actionBinder));
 			this.KeyboardStates = keyboardStates ?? throw new ArgumentNullException(nameof(keyboardStates));
-
+            this.collissionObserver = collissionObserver ?? throw new ArgumentNullException(nameof(collissionObserver));
+            this.enemyAiObserver = enemyAiObserver ?? throw new ArgumentNullException(nameof(enemyAiObserver));
             InitKeyboardController();
         }
 
@@ -45,30 +49,38 @@ namespace PhobiaX.Game.GameLoops
             this.ActionBinder.AssignKeysToGameAction(GameAction.Player2Fire, false, SDL.SDL_Scancode.SDL_SCANCODE_LALT);
             this.ActionBinder.AssignKeysToGameAction(GameAction.Player2StopMoving, true, SDL.SDL_Scancode.SDL_SCANCODE_W, SDL.SDL_Scancode.SDL_SCANCODE_S);
 
-            this.ActionBinder.RegisterPressAction(GameAction.Player1MoveForward, () => player1GameObject.MoveForward());
-            this.ActionBinder.RegisterPressAction(GameAction.Player1MoveBackward, () => player1GameObject.MoveBackward());
-            this.ActionBinder.RegisterPressAction(GameAction.Player1RotateLeft, () => player1GameObject.TurnLeft());
-            this.ActionBinder.RegisterPressAction(GameAction.Player1RotateRight, () => player1GameObject.TurnRight());
-            this.ActionBinder.RegisterPressAction(GameAction.Player1StopMoving, () => player1GameObject.Stop());
-            this.ActionBinder.RegisterPressAction(GameAction.Player1Fire, () => timeThrottler.Execute(TimeSpan.FromMilliseconds(400), () => gameObjectFactory.CreateRocket(player1GameObject)));
+            this.ActionBinder.RegisterPressAction(GameAction.Player1MoveForward, () => playerGameObjects[0].MoveForward());
+            this.ActionBinder.RegisterPressAction(GameAction.Player1MoveBackward, () => playerGameObjects[0].MoveBackward());
+            this.ActionBinder.RegisterPressAction(GameAction.Player1RotateLeft, () => playerGameObjects[0].TurnLeft());
+            this.ActionBinder.RegisterPressAction(GameAction.Player1RotateRight, () => playerGameObjects[0].TurnRight());
+            this.ActionBinder.RegisterPressAction(GameAction.Player1StopMoving, () => playerGameObjects[0].Stop());
+            this.ActionBinder.RegisterPressAction(GameAction.Player1Fire, () => timeThrottler.Execute(TimeSpan.FromMilliseconds(400), () => gameObjectFactory.CreateRocket(playerGameObjects[0])));
 
-            this.ActionBinder.RegisterPressAction(GameAction.Player2MoveForward, () => player2GameObject.MoveForward());
-            this.ActionBinder.RegisterPressAction(GameAction.Player2MoveBackward, () => player2GameObject.MoveBackward());
-            this.ActionBinder.RegisterPressAction(GameAction.Player2RotateLeft, () => player2GameObject.TurnLeft());
-            this.ActionBinder.RegisterPressAction(GameAction.Player2RotateRight, () => player2GameObject.TurnRight());
-            this.ActionBinder.RegisterPressAction(GameAction.Player2StopMoving, () => player2GameObject.Stop());
-            this.ActionBinder.RegisterPressAction(GameAction.Player2Fire, () => timeThrottler.Execute(TimeSpan.FromMilliseconds(400), () => gameObjectFactory.CreateRocket(player2GameObject)));
+            this.ActionBinder.RegisterPressAction(GameAction.Player2MoveForward, () => playerGameObjects[1].MoveForward());
+            this.ActionBinder.RegisterPressAction(GameAction.Player2MoveBackward, () => playerGameObjects[1].MoveBackward());
+            this.ActionBinder.RegisterPressAction(GameAction.Player2RotateLeft, () => playerGameObjects[1].TurnLeft());
+            this.ActionBinder.RegisterPressAction(GameAction.Player2RotateRight, () => playerGameObjects[1].TurnRight());
+            this.ActionBinder.RegisterPressAction(GameAction.Player2StopMoving, () => playerGameObjects[1].Stop());
+            this.ActionBinder.RegisterPressAction(GameAction.Player2Fire, () => timeThrottler.Execute(TimeSpan.FromMilliseconds(400), () => gameObjectFactory.CreateRocket(playerGameObjects[1])));
         }
 
-        public int GetDifficulty()
+        private int GetDifficulty()
         {
-            var totalScore = (player1GameObject.Score + player2GameObject.Score);
+            var totalScore = 0;
+            foreach (var player in playerGameObjects)
+            {
+                totalScore += player.Score;
+            }
             return 8 + totalScore / 10;
         }
 
         public void Evaluate()
         {
+            enemyAiObserver.SetAmountOfEnemies(this.GetDifficulty());
+
             this.KeyboardStates.ScanKeys();
+            this.collissionObserver.Evaluate();
+            this.enemyAiObserver.Evaluate();
         }
 
     }
