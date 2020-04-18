@@ -6,9 +6,15 @@ namespace PhobiaX.Physics
 {
 	public static class MathFormulas
 	{
-        private const double CircleDegrees = 360;
+        public const double CircleDegrees = 360;
 
-        public static double CalculateAngleTowardsGameObject(int x, int y, int targetX, int targetY)
+        public static (double xIncrement, double yIncrement) GetIncrementByAngle(double speed, double angle)
+        {
+            var radians = ToRadians(angle);
+            return (speed * Math.Cos(radians), speed * Math.Sin(radians));
+        }
+
+        public static double GetAngleTowardsTarget(int x, int y, int targetX, int targetY)
         {
             double xDiff = targetX - x;
             double yDiff = targetY - y;

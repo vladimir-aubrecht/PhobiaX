@@ -1,4 +1,6 @@
 ﻿using PhobiaX.Assets;
+using PhobiaX.Graphics;
+using PhobiaX.Physics;
 using PhobiaX.SDL2;
 using System;
 using System.Collections.Generic;
@@ -14,9 +16,9 @@ namespace PhobiaX.Game.GameObjects
 		public int Score { get; set; } = 0;
 		public int Life { get; set; } = 100;
 
-		public PlayerGameObject(AnimatedCollection playerAnimatedSet, GameObjectFactory gameObjectFactory) : base(playerAnimatedSet, false)
+		public PlayerGameObject(IRenderableObject renderableObject, ICollidableObject collidableObject, AnimatedCollection playerAnimatedSet, GameObjectFactory gameObjectFactory) : base(renderableObject, collidableObject, playerAnimatedSet, false)
 		{
-			playerGameObjectCount++;
+			playerGameObjectCount = (playerGameObjectCount + 1) % 2;
 		}
 
 		public override void Hit()

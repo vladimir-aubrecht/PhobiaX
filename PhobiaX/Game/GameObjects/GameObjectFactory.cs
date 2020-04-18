@@ -1,5 +1,7 @@
 ﻿using PhobiaX.Assets;
 using PhobiaX.Game.GameObjects;
+using PhobiaX.Graphics;
+using PhobiaX.Physics;
 using PhobiaX.SDL2;
 using PhobiaX.SDL2.Options;
 using System;
@@ -66,7 +68,7 @@ namespace PhobiaX
         public StaticGameObject CreateScoreBar(int x, int y)
         {
             var scaledScoreBarSurface = surfaceFactory.CreateResizedSurface(scoreSurface, windowOptions.Width / 6);
-            var scoreBar = new StaticGameObject(x, y, scaledScoreBarSurface);
+            var scoreBar = new StaticGameObject(new RenderableSurface(scaledScoreBarSurface) { X = x, Y = y }, null);
 
             TriggerCallback(scoreBar);
 
@@ -77,7 +79,7 @@ namespace PhobiaX
         {
             var scaledLifeBarSurface = surfaceFactory.CreateResizedSurface(lifeSurface, windowOptions.Width / 6);
             
-            var lifeBar = new StaticGameObject(x, y, scaledLifeBarSurface);
+            var lifeBar = new StaticGameObject(new RenderableSurface(scaledLifeBarSurface) { X = x, Y = y }, null);
 
             TriggerCallback(lifeBar);
 
@@ -97,7 +99,7 @@ namespace PhobiaX
         public MapGameObject CreateMap()
         {
             var scaledMapSurface = surfaceFactory.CreateResizedSurface(mapSurface, windowOptions.Width);
-            var map = new MapGameObject(scaledMapSurface);
+            var map = new MapGameObject(new RenderableSurface(scaledMapSurface), new CollidableObject(scaledMapSurface.Surface.w, scaledMapSurface.Surface.h));
             TriggerCallback(map);
 
             return map;
@@ -105,7 +107,8 @@ namespace PhobiaX
 
         public RocketGameObject CreateRocket(IGameObject owner)
         {
-            var gameObject = new RocketGameObject(new AnimatedCollection(effectsAnimatedSet), owner);
+            var surface = effectsAnimatedSet.GetDefaultAnimatedAsset().GetCurrentFrame().Surface;
+            var gameObject = new RocketGameObject(new RenderableAnimation(new AnimatedCollection(effectsAnimatedSet)), new CollidableObject(surface.w, surface.h), new AnimatedCollection(effectsAnimatedSet), owner);
             TriggerCallback(gameObject);
 
             return gameObject;
@@ -113,7 +116,8 @@ namespace PhobiaX
 
         public PlayerGameObject CreatePlayer(int x, int y)
         {
-            var gameObject = new PlayerGameObject(new AnimatedCollection(playerAnimatedSet), this) { X = x, Y = y };
+            var surface = playerAnimatedSet.GetDefaultAnimatedAsset().GetCurrentFrame().Surface;
+            var gameObject = new PlayerGameObject(new RenderableAnimation(new AnimatedCollection(playerAnimatedSet)), new CollidableObject(surface.w, surface.h), new AnimatedCollection(playerAnimatedSet), this) { X = x, Y = y };
             TriggerCallback(gameObject);
 
             return gameObject;
@@ -121,7 +125,8 @@ namespace PhobiaX
 
         public EnemyGameObject CreateEnemy()
         {
-            var enemy = new EnemyGameObject(new AnimatedCollection(enemyAnimatedSet), windowOptions);
+            var surface = playerAnimatedSet.GetDefaultAnimatedAsset().GetCurrentFrame().Surface;
+            var enemy = new EnemyGameObject(new RenderableAnimation(new AnimatedCollection(enemyAnimatedSet)), new CollidableObject(surface.w, surface.h), new AnimatedCollection(enemyAnimatedSet), windowOptions);
 
             TriggerCallback(enemy);
 

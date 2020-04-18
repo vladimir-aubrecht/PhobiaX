@@ -1,4 +1,6 @@
 ﻿using PhobiaX.Assets;
+using PhobiaX.Graphics;
+using PhobiaX.Physics;
 using PhobiaX.SDL2;
 using System;
 using System.Collections.Generic;
@@ -10,7 +12,7 @@ namespace PhobiaX.Game.GameObjects
 	{
 		public Action DestroyCallback { get; set; }
 
-		public RocketGameObject(AnimatedCollection animatedSet, IGameObject owner) : base(animatedSet, owner)
+		public RocketGameObject(IRenderableObject renderableObject, ICollidableObject collidableObject, AnimatedCollection animatedSet, IGameObject owner) : base(renderableObject, collidableObject, animatedSet, owner)
 		{
 			Speed = 12;
 		}

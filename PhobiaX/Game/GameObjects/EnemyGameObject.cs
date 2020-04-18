@@ -1,4 +1,6 @@
 ﻿using PhobiaX.Assets;
+using PhobiaX.Graphics;
+using PhobiaX.Physics;
 using PhobiaX.SDL2.Options;
 using System;
 using System.Collections.Generic;
@@ -11,7 +13,7 @@ namespace PhobiaX.Game.GameObjects
         private readonly Random random = new Random();
         private readonly WindowOptions windowOptions;
 
-        public EnemyGameObject(AnimatedCollection animatedSet, WindowOptions windowOptions) : base(animatedSet)
+        public EnemyGameObject(IRenderableObject renderableObject, ICollidableObject collidableObject, AnimatedCollection animatedSet, WindowOptions windowOptions) : base(renderableObject, collidableObject, animatedSet)
 		{
 			Speed = 3 * random.NextDouble() + 2;
             this.windowOptions = windowOptions ?? throw new ArgumentNullException(nameof(windowOptions));

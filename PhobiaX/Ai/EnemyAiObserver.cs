@@ -16,7 +16,7 @@ namespace PhobiaX.Ai
 		private readonly GameObjectFactory gameObjectFactory;
 		private IList<EnemyGameObject> enemies = new List<EnemyGameObject>();
 		private IList<IGameObject> targets = new List<IGameObject>();
-		private int desiredAmountOfEnemies = 1;
+		private int desiredAmountOfEnemies = 0;
 
 		public EnemyAiObserver(CollissionObserver collissionObserver, PathFinder pathFinder, GameObjectFactory gameObjectFactory)
 		{

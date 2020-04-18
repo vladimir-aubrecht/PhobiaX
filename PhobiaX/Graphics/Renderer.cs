@@ -38,6 +38,7 @@ namespace PhobiaX.Graphics
 		{
 			foreach (var gameObject in gameObjects)
 			{
+				gameObject.RenderableObject?.Draw(screenSurface);
 				gameObject.Draw(screenSurface);
 			}
 

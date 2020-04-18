@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Transactions;
 using PhobiaX.Assets;
+using PhobiaX.Graphics;
 using PhobiaX.Physics;
 using PhobiaX.SDL2;
 using SDL2;
@@ -15,7 +16,6 @@ namespace PhobiaX.Game.GameObjects
         public Guid Id { get; } = Guid.NewGuid();
 
         private const int defaultAngleOffset = 90;
-        private const double CircleDegrees = 360;
 
         private double angle = defaultAngleOffset;
         public int X { get; set; } = 0;
@@ -27,6 +27,7 @@ namespace PhobiaX.Game.GameObjects
         private int previousFrameIndex = 0;
 
         public double Speed { get; set; } = 4;
+        public IRenderableObject RenderableObject { get; }
         private AnimatedCollection AnimatedSet { get; }
 
         public SDLSurface CurrentSurface => AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrame();
@@ -49,21 +50,26 @@ namespace PhobiaX.Game.GameObjects
             {
                 angle = value;
 
-                AnimatedSet.GetDefaultAnimatedAsset().SetFrameIndex(CalculateFrameIndexFromCurrentAngle());
+                var index = AnimationFormulas.GetFrameIndexByAngle(Angle, defaultAngleOffset, AnimatedSet.GetDefaultAnimatedAsset().GetAnimationFrames().Count);
+                AnimatedSet.GetDefaultAnimatedAsset().SetFrameIndex(index);
             }
         }
 
         public bool CanCollide => !isHit;
 
-        public AnimatedGameObject(AnimatedCollection animatedSurfaceAssets) : this(animatedSurfaceAssets, false)
+        public ICollidableObject ColladableObject { get; }
+
+        public AnimatedGameObject(IRenderableObject renderableObject, ICollidableObject colladableObject, AnimatedCollection animatedSurfaceAssets) : this(renderableObject, colladableObject, animatedSurfaceAssets, false)
         {
         }
 
-        public AnimatedGameObject(AnimatedCollection animatedSurfaceAssets, bool alwaysStopped)
+        public AnimatedGameObject(IRenderableObject renderableObject, ICollidableObject colladableObject, AnimatedCollection animatedSurfaceAssets, bool alwaysStopped)
         {
+            RenderableObject = renderableObject ?? throw new ArgumentNullException(nameof(renderableObject));
+            ColladableObject = colladableObject;
             this.AnimatedSet = animatedSurfaceAssets;
             this.alwaysStopped = alwaysStopped;
-            minimalAngleStep = CircleDegrees / animatedSurfaceAssets.GetDefaultAnimatedAsset().GetAnimationFrames().Count;
+            minimalAngleStep = MathFormulas.CircleDegrees / animatedSurfaceAssets.GetDefaultAnimatedAsset().GetAnimationFrames().Count;
         }
 
         public void Stop()
@@ -74,12 +80,12 @@ namespace PhobiaX.Game.GameObjects
 
         public void TurnLeft()
         {
-            Angle = MathFormulas.Modulo(Angle + minimalAngleStep, CircleDegrees);
+            Angle = MathFormulas.Modulo(Angle + minimalAngleStep, MathFormulas.CircleDegrees);
         }
 
         public void TurnRight()
         {
-            Angle = MathFormulas.Modulo(Angle - minimalAngleStep, CircleDegrees);
+            Angle = MathFormulas.Modulo(Angle - minimalAngleStep, MathFormulas.CircleDegrees);
         }
 
         public void MoveForward()
@@ -89,12 +95,12 @@ namespace PhobiaX.Game.GameObjects
                 return;
             }
 
-            var radians = CalculateNewAngleInRadiansFromFrameIndex();
+            var (x, y) = MathFormulas.GetIncrementByAngle(Speed, CalculateAngleFromFrameIndex());
 
             BackupCurrentPosition();
 
-            X -= (int)(Speed * Math.Cos(radians));
-            Y += (int)(Speed * Math.Sin(radians));
+            X -= (int)(x);
+            Y += (int)(y);
 
             if (!alwaysStopped)
             {
@@ -110,12 +116,12 @@ namespace PhobiaX.Game.GameObjects
                 return;
             }
 
-            var radians = CalculateNewAngleInRadiansFromFrameIndex();
+            var (x, y) = MathFormulas.GetIncrementByAngle(Speed, CalculateAngleFromFrameIndex());
 
             BackupCurrentPosition();
 
-            X += (int)(Speed * Math.Cos(radians));
-            Y -= (int)(Speed * Math.Sin(radians));
+            X += (int)x;
+            Y -= (int)y;
 
             if (!alwaysStopped)
             {
@@ -147,7 +153,7 @@ namespace PhobiaX.Game.GameObjects
                 return false;
             }
 
-            Angle = MathFormulas.CalculateAngleTowardsGameObject(X, Y, gameObject.X, gameObject.Y);
+            Angle = MathFormulas.GetAngleTowardsTarget(X, Y, gameObject.X, gameObject.Y);
 
             MoveForward();
             return true;
@@ -155,6 +161,11 @@ namespace PhobiaX.Game.GameObjects
 
         public virtual bool IsColliding(int x, int y, SDLSurface surface)
         {
+            if (surface == null)
+            {
+                return false;
+            }
+
             var thisFrame = this.AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrame();
 
             var surfaceWidth = surface.Surface.w;
@@ -169,7 +180,7 @@ namespace PhobiaX.Game.GameObjects
 
         public bool IsColliding(IGameObject gameObject)
         {
-            return IsColliding(gameObject.X, gameObject.Y, gameObject.CurrentSurface);
+            return this.ColladableObject.IsColliding(gameObject.ColladableObject);
         }
 
         public virtual void Draw(SDLSurface destination)
@@ -199,20 +210,12 @@ namespace PhobiaX.Game.GameObjects
             objectSurface.BlitSurface(destination, ref surfaceRectangle);
         }
 
-        private int CalculateFrameIndexFromCurrentAngle()
+        private double CalculateAngleFromFrameIndex()
         {
-            double animationAngle = MathFormulas.Modulo(Angle - defaultAngleOffset, CircleDegrees);
             int amountOfAngles = AnimatedSet.GetDefaultAnimatedAsset().GetAnimationFrames().Count;
-
-            return (int)MathFormulas.Modulo(Math.Ceiling(animationAngle * amountOfAngles / CircleDegrees), amountOfAngles);
-        }
-
-        private double CalculateNewAngleInRadiansFromFrameIndex()
-        {
-            var rotationFrameIndex = CalculateFrameIndexFromCurrentAngle();
-            int amountOfAngles = AnimatedSet.GetDefaultAnimatedAsset().GetAnimationFrames().Count;
-
-            return MathFormulas.ToRadians(((CircleDegrees / amountOfAngles) * (MathFormulas.Modulo(rotationFrameIndex - amountOfAngles / 4, amountOfAngles))));
+            var index = AnimationFormulas.GetFrameIndexByAngle(Angle, defaultAngleOffset, amountOfAngles);
+            
+            return AnimationFormulas.GetAngleByIndex(index, defaultAngleOffset, amountOfAngles);
         }
 
         public virtual void Hit()

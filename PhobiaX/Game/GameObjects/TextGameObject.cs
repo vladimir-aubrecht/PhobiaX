@@ -1,4 +1,6 @@
 ﻿using PhobiaX.Assets;
+using PhobiaX.Graphics;
+using PhobiaX.Physics;
 using PhobiaX.SDL2;
 using SDL2;
 using System;
@@ -17,6 +19,7 @@ namespace PhobiaX.Game.GameObjects
 		private readonly SDLSurfaceFactory surfaceFactory;
 		private readonly int maxWidth;
 
+		public IRenderableObject RenderableObject { get; }
 		public int X { get; }
 
 		public int Y { get; }
@@ -27,6 +30,7 @@ namespace PhobiaX.Game.GameObjects
 
 		public TextGameObject(int x, int y, IDictionary<char, SDLSurface> symbolSurfaces, SDLSurfaceFactory surfaceFactory, int maxWidth)
 		{
+			RenderableObject = null;
 			X = x;
 			Y = y;
 			this.symbolSurfaces = symbolSurfaces ?? throw new ArgumentNullException(nameof(symbolSurfaces));
@@ -36,6 +40,8 @@ namespace PhobiaX.Game.GameObjects
 		}
 
 		public SDLSurface CurrentSurface { get; private set; }
+
+		public ICollidableObject ColladableObject { get; } = null;
 
 		public void Draw(SDLSurface destination)
 		{

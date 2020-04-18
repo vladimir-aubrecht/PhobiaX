@@ -76,7 +76,7 @@ namespace PhobiaX.Game.GameLoops
 
         public void Evaluate()
         {
-            enemyAiObserver.SetAmountOfEnemies(this.GetDifficulty());
+            //enemyAiObserver.SetAmountOfEnemies(this.GetDifficulty());
 
             this.KeyboardStates.ScanKeys();
             this.collissionObserver.Evaluate();

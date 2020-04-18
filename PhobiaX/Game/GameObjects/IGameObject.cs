@@ -1,4 +1,6 @@
-﻿using PhobiaX.SDL2;
+﻿using PhobiaX.Graphics;
+using PhobiaX.Physics;
+using PhobiaX.SDL2;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -24,5 +26,8 @@ namespace PhobiaX.Game.GameObjects
 		public void Hit();
 
 		void Draw(SDLSurface destination);
+
+		IRenderableObject RenderableObject { get; }
+		ICollidableObject ColladableObject { get; }
 	}
 }
