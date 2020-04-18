@@ -7,9 +7,9 @@ namespace PhobiaX.Game.GameObjects
 {
 	public class EnemyGameObject : AnimatedGameObject
 	{
-		public EnemyGameObject(AnimatedCollection animatedSet) : base(animatedSet, 30)
+		public EnemyGameObject(AnimatedCollection animatedSet) : base(animatedSet)
 		{
-			Speed = 3;
+			Speed = 1;
 		}
-	}
+    }
 }

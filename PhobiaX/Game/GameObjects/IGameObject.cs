@@ -7,11 +7,13 @@ namespace PhobiaX.Game.GameObjects
 {
 	public interface IGameObject
 	{
-		public int X { get; }
+		int X { get; }
 
-		public int Y { get; }
+		int Y { get; }
 
-		public bool CanBeHit { get; }
+		double Angle { get; }
+
+		public bool CanCollide { get; }
 
 		SDLSurface CurrentSurface { get; }
 

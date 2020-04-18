@@ -19,7 +19,9 @@ namespace PhobiaX.Game.GameObjects
 
 		public int Y { get; }
 
-		public bool CanBeHit { get; } = false;
+		public double Angle { get; }
+
+		public bool CanCollide { get; } = false;
 
 		public TextGameObject(int x, int y, IDictionary<char, SDLSurface> symbolSurfaces, SDLSurfaceFactory surfaceFactory, int maxWidth)
 		{

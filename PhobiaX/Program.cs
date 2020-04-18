@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PhobiaX.Actions;
+using PhobiaX.Ai;
 using PhobiaX.Assets;
+using PhobiaX.Cleanups;
 using PhobiaX.Game.GameLoops;
 using PhobiaX.Game.GameObjects;
 using PhobiaX.Game.UserInteface;
@@ -22,30 +25,61 @@ namespace PhobiaX
         private readonly TimeSpan renderingDelay = TimeSpan.FromMilliseconds(20);
         private readonly SDLApplication application;
         private readonly SDLEventProcessor eventProcessor;
+        private readonly GameGarbageObserver gameGarbageObserver;
         private readonly GameLoopFactory gameLoopFactory;
-        private readonly EnemyFactory enemyFactory;
+        private readonly EnemyAiObserver enemyAiObserver;
+        private readonly GameObjectFactory gameObjectFactory;
         private readonly Renderer renderer;
         private readonly CollissionObserver collissionObserver;
-        private readonly PathFinder pathFinder;
-        private EnemyManager enemyManager;
         private GameUI gameUI;
         private GameLoop gameLoop;
 
-        public Program(SDLApplication application, SDLEventProcessor eventProcessor, GameUI gameUI, GameLoopFactory gameLoopFactory, EnemyFactory enemyFactory, Renderer renderer, CollissionObserver collissionObserver, PathFinder pathFinder)
+        public Program(SDLApplication application, SDLEventProcessor eventProcessor, GameGarbageObserver gameGarbageObserver, GameUI gameUI, GameLoopFactory gameLoopFactory, EnemyAiObserver enemyAiObserver, GameObjectFactory gameObjectFactory, Renderer renderer, CollissionObserver collissionObserver)
         {
             this.application = application ?? throw new ArgumentNullException(nameof(application));
             this.eventProcessor = eventProcessor ?? throw new ArgumentNullException(nameof(eventProcessor));
+            this.gameGarbageObserver = gameGarbageObserver ?? throw new ArgumentNullException(nameof(gameGarbageObserver));
             this.gameUI = gameUI ?? throw new ArgumentNullException(nameof(gameUI));
             this.gameLoopFactory = gameLoopFactory ?? throw new ArgumentNullException(nameof(gameLoopFactory));
-            this.enemyFactory = enemyFactory ?? throw new ArgumentNullException(nameof(enemyFactory));
+            this.enemyAiObserver = enemyAiObserver ?? throw new ArgumentNullException(nameof(enemyAiObserver));
+            this.gameObjectFactory = gameObjectFactory ?? throw new ArgumentNullException(nameof(gameObjectFactory));
             this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             this.collissionObserver = collissionObserver ?? throw new ArgumentNullException(nameof(collissionObserver));
-            this.pathFinder = pathFinder ?? throw new ArgumentNullException(nameof(pathFinder));
+
             Restart();
         }
 
         private void Restart()
         {
+            gameObjectFactory.ClearCallbacks();
+
+            gameGarbageObserver.CleanupAll();
+            gameGarbageObserver.AddCleanableObject(renderer);
+            gameGarbageObserver.AddCleanableObject(collissionObserver);
+            gameGarbageObserver.AddCleanableObject(enemyAiObserver);
+
+            enemyAiObserver.EnemyDiedCallback((gameObject) => gameGarbageObserver.Observe(gameObject));
+
+            foreach (var obj in gameUI.GetGameObjects())
+            {
+                renderer.Add(obj);
+            }
+
+            gameObjectFactory.OnCreateCallback((gameObject) => {
+                collissionObserver.Observe(gameObject);
+                renderer.Add(gameObject);
+
+                if (gameObject is EnemyGameObject)
+                {
+                    enemyAiObserver.Observe(gameObject as EnemyGameObject);
+                }
+
+                if (gameObject is PlayerGameObject)
+                {
+                    enemyAiObserver.AddTarget(gameObject);
+                }
+            });
+            
             gameLoop = gameLoopFactory.CreateGameLoop();
 
             gameLoop.ActionBinder.AssignKeysToGameAction(GameAction.Quit, false, SDL.SDL_Scancode.SDL_SCANCODE_Q);
@@ -53,12 +87,39 @@ namespace PhobiaX
             gameLoop.ActionBinder.RegisterPressAction(GameAction.Quit, () => application.Quit());
             gameLoop.ActionBinder.RegisterPressAction(GameAction.Restart, () => Restart());
 
-            collissionObserver.SetForObserving("players", new List<IGameObject> { gameLoop.GetPlayer1GameObject(), gameLoop.GetPlayer2GameObject() });
+            collissionObserver.OnObserveCallback((gameObject, colliders) => {
 
-            this.enemyManager = new EnemyManager(enemyFactory, collissionObserver, pathFinder, gameLoop.GetPlayer1GameObject(), gameLoop.GetPlayer2GameObject());
-            
-            renderer.SetForRendering("ui", gameUI.GetGameObjects());
-            renderer.SetForRendering("players", new List<IGameObject> { gameLoop.GetPlayer1GameObject(), gameLoop.GetPlayer2GameObject() });
+                colliders = colliders.Where(i => i.CanCollide).ToList();
+                if (!gameObject.CanCollide || !colliders.Any())
+                {
+                    return;
+                }
+
+                if (gameObject is PlayerGameObject && colliders.OfType<EnemyGameObject>().Any())
+                {
+                    gameObject.Hit();
+                }
+                else if (gameObject is EnemyGameObject && colliders.OfType<RocketGameObject>().Any())
+                {
+                    gameObject.Hit();
+
+                    foreach (var rocket in colliders.OfType<RocketGameObject>())
+                    {
+                        var castedRocket = rocket as RocketGameObject;
+                        (castedRocket.Owner as PlayerGameObject).Score++;
+                    }
+                }
+
+                if (gameObject is EnemyGameObject)
+                {
+                    (gameObject as EnemyGameObject).Stop();
+                }
+
+                if (gameObject is RocketGameObject)
+                {
+                    gameObject.Hit();
+                }
+            });
         }
 
         public void StartGameLoop()
@@ -71,28 +132,16 @@ namespace PhobiaX
 
         private void DoGameLoop()
         {
+            enemyAiObserver.SetAmountOfEnemies(gameLoop.GetDifficulty());
+
             gameLoop.Evaluate();
-
-            var player1 = gameLoop.GetPlayer1GameObject();
-            var player2 = gameLoop.GetPlayer2GameObject();
-            var map = gameUI.GetMapGameObject();
-
-            enemyManager.SetDesiredAmountOfEnemies(gameLoop.GetDifficulty());
-
-            var enemies = new List<IGameObject>(enemyManager.GetAllEnemies());
-            renderer.SetForRendering("enemies", enemies);
-            enemies.Add(player1);
-            enemies.Add(player2);
-
-            player1.EvaluateRockets(map, enemies);
-            player2.EvaluateRockets(map, enemies);
-
-            enemyManager.MoveEnemies();
-
-            renderer.Render();
+            eventProcessor.Evaluate();
+            collissionObserver.Evaluate();
+            enemyAiObserver.Evaluate();
+            renderer.Evaluate();
+            gameGarbageObserver.Evaluate();
 
             application.Delay(renderingDelay);
-            eventProcessor.EvaluateEvents();
         }
 
         static void Main(string[] args)
@@ -125,8 +174,11 @@ namespace PhobiaX
             serviceCollection.AddSingleton<CollissionObserver>();
             serviceCollection.AddSingleton<UserIntefaceFactory>();
             serviceCollection.AddSingleton<GameLoopFactory>();
-            serviceCollection.AddSingleton<EnemyFactory>();
+            serviceCollection.AddSingleton<GameObjectFactory>();
             serviceCollection.AddSingleton<PathFinder>();
+            serviceCollection.AddSingleton<TimeThrottler>();
+            serviceCollection.AddSingleton<EnemyAiObserver>();
+            serviceCollection.AddSingleton<GameGarbageObserver>();
             serviceCollection.AddSingleton<GameUI>((sc) => sc.GetService<UserIntefaceFactory>().CreateGameUI());
 
             return serviceCollection.BuildServiceProvider();

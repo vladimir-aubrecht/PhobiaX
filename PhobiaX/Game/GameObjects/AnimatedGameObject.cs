@@ -30,7 +30,6 @@ namespace PhobiaX.Game.GameObjects
         private bool isHit = false;
 
         private bool alwaysStopped;
-        private readonly int minimumMsForMove;
         private readonly double minimalAngleStep = 1;
         private bool isStopped = true;
         public bool IsFinalAnimationFinished => isHit && (!AnimatedSet.IsFinalSetAnimation || AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrameIndex() == AnimatedSet.GetCurrentAnimatedAsset().GetAnimationFrames().Count - 1);
@@ -49,23 +48,23 @@ namespace PhobiaX.Game.GameObjects
             }
         }
 
-        public bool CanBeHit => !isHit;
+        public bool CanCollide => !isHit;
 
-        public AnimatedGameObject(AnimatedCollection animatedSurfaceAssets, int minimumMsForMove) : this(animatedSurfaceAssets, false, minimumMsForMove)
+        public AnimatedGameObject(AnimatedCollection animatedSurfaceAssets) : this(animatedSurfaceAssets, false)
         {
         }
 
-        public AnimatedGameObject(AnimatedCollection animatedSurfaceAssets, bool alwaysStopped, int minimumMsForMove)
+        public AnimatedGameObject(AnimatedCollection animatedSurfaceAssets, bool alwaysStopped)
         {
             this.AnimatedSet = animatedSurfaceAssets;
             this.alwaysStopped = alwaysStopped;
-            this.minimumMsForMove = minimumMsForMove;
             minimalAngleStep = CircleDegrees / animatedSurfaceAssets.GetDefaultAnimatedAsset().GetAnimationFrames().Count;
         }
 
         public void Stop()
         {
             isStopped = true;
+            this.AnimatedSet.GetCurrentAnimatedAsset().ResetFrame();
         }
 
         public void TurnLeft()
@@ -81,11 +80,6 @@ namespace PhobiaX.Game.GameObjects
         public void MoveForward()
         {
             if (isHit)
-            {
-                return;
-            }
-
-            if ((DateTimeOffset.UtcNow - lastMovement).TotalMilliseconds < minimumMsForMove)
             {
                 return;
             }
@@ -109,11 +103,6 @@ namespace PhobiaX.Game.GameObjects
         public void MoveBackward()
         {
             if (isHit)
-            {
-                return;
-            }
-
-            if ((DateTimeOffset.UtcNow - lastMovement).TotalMilliseconds < minimumMsForMove)
             {
                 return;
             }
@@ -154,7 +143,6 @@ namespace PhobiaX.Game.GameObjects
         {
             if (this.IsColliding(gameObject))
             {
-                this.AnimatedSet.GetCurrentAnimatedAsset().ResetFrame();
                 return false;
             }
 

@@ -7,7 +7,6 @@ namespace PhobiaX.Game.UserInterface
 {
 	public class GameUI
 	{
-		private readonly StaticGameObject map;
 		private readonly TextGameObject player1Score;
 		private readonly TextGameObject player2Score;
 		private readonly TextGameObject player1Energy;
@@ -17,7 +16,6 @@ namespace PhobiaX.Game.UserInterface
 
 		public GameUI(StaticGameObject map, TextGameObject player1Score, TextGameObject player2Score, TextGameObject player1Energy, TextGameObject player2Energy, params IGameObject[] otherGraphics)
 		{
-			this.map = map ?? throw new ArgumentNullException(nameof(map));
 			this.player1Score = player1Score ?? throw new ArgumentNullException(nameof(player1Score));
 			this.player2Score = player2Score ?? throw new ArgumentNullException(nameof(player2Score));
 			this.player1Energy = player1Energy ?? throw new ArgumentNullException(nameof(player1Energy));
@@ -55,11 +53,6 @@ namespace PhobiaX.Game.UserInterface
 		public void SetPlayer2Life(int life)
 		{
 			player2Energy.SetText($"P2 {life}");
-		}
-
-		public IGameObject GetMapGameObject()
-		{
-			return this.map;
 		}
 
 		public IList<IGameObject> GetGameObjects()

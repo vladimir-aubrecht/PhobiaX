@@ -10,9 +10,10 @@ namespace PhobiaX.Game.GameObjects
 	{
 		public int X { get; }
 		public int Y { get; }
+		public double Angle { get; }
 		public SDLSurface CurrentSurface { get; }
 
-		public bool CanBeHit { get; } = false;
+		public bool CanCollide { get; } = false;
 
 		public StaticGameObject(int x, int y, SDLSurface surface)
 		{

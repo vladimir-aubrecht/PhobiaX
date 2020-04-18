@@ -6,20 +6,20 @@ namespace PhobiaX.Game.GameObjects
 {
     public class EffectGameObject : AnimatedGameObject
     {
-        private readonly AnimatedGameObject gameObject;
+        public IGameObject Owner { get; }
 
-        public EffectGameObject(AnimatedCollection animatedSet, AnimatedGameObject gameObject) : base(animatedSet, true, 0)
+        public EffectGameObject(AnimatedCollection animatedSet, IGameObject owner) : base(animatedSet, true)
         {
-            this.gameObject = gameObject ?? throw new ArgumentNullException(nameof(gameObject));
+            this.Owner = owner ?? throw new ArgumentNullException(nameof(owner));
 
-            this.X = gameObject.X;
-            this.Y = gameObject.Y;
-            this.Angle = gameObject.Angle;
+            this.X = owner.X;
+            this.Y = owner.Y;
+            this.Angle = owner.Angle;
         }
 
         public override bool IsColliding(int x, int y, SDLSurface surface)
         {
-            if (surface == gameObject.CurrentSurface && x == gameObject.X && y == gameObject.Y)
+            if (surface == Owner.CurrentSurface && x == Owner.X && y == Owner.Y)
             {
                 return false;
             }

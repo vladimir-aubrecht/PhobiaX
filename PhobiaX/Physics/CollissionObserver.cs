@@ -1,46 +1,82 @@
-﻿using PhobiaX.Game.GameObjects;
+﻿using PhobiaX.Cleanups;
+using PhobiaX.Game.GameObjects;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace PhobiaX.Physics
 {
-	public class CollissionObserver
+	public class CollissionObserver : ICleanable
 	{
-		private IDictionary<string, IList<IGameObject>> categorizedGameObjects = new Dictionary<string, IList<IGameObject>>();
+		protected IList<IGameObject> gameObjects = new List<IGameObject>();
+		protected IList<Action<IGameObject, IList<IGameObject>>> callbacks = new List<Action<IGameObject, IList<IGameObject>>>();
 
-		public CollissionObserver()
+		public void OnObserveCallback(Action<IGameObject, IList<IGameObject>> callback)
 		{
-
+			callbacks.Add(callback);
 		}
 
-		public void SetForObserving(string name, IList<IGameObject> gameObjects)
+		public void Observe(IGameObject gameObject)
 		{
-			if (!this.categorizedGameObjects.TryAdd(name, gameObjects))
-			{
-				this.categorizedGameObjects[name] = gameObjects;
-			}
+			this.gameObjects.Add(gameObject);
 		}
 
-		public bool IsObjectColliding(IGameObject testedObject)
+		public virtual void Cleanup(IGameObject gameObject)
 		{
-			var isColliding = false;
+			this.gameObjects.Remove(gameObject);
+		}
 
-			foreach (var gameObjects in categorizedGameObjects)
+		public virtual void CleanupAll()
+		{
+			gameObjects.Clear();
+			callbacks.Clear();
+		}
+
+		public void Evaluate()
+		{
+			var collides = new Dictionary<IGameObject, IList<IGameObject>>();
+			foreach (var gameObject in gameObjects)
 			{
-				foreach (var gameObject in gameObjects.Value)
+				var collidingObjects = FindCollidingObjects(gameObject);
+					
+				if (collidingObjects.Count > 0)
 				{
-					// TODO: Removal of CanBeHit and replacing it with unregistration?
-					if (testedObject == gameObject || !gameObject.CanBeHit)
-					{
-						continue;
-					}
-
-					isColliding |= testedObject.IsColliding(gameObject);
+					collides.Add(gameObject, collidingObjects);
 				}
 			}
 
-			return isColliding;
+			foreach (var collide in collides)
+			{
+				TriggerCallback(collide.Key, collide.Value);
+			}
+		}
+
+		public IList<IGameObject> FindCollidingObjects(IGameObject testedObject)
+		{
+			var output = new List<IGameObject>();
+			
+			foreach (var gameObject in gameObjects)
+			{
+				if (testedObject == gameObject)
+				{
+					continue;
+				}
+
+				if (testedObject.IsColliding(gameObject))
+				{
+					output.Add(gameObject);
+				}
+			}
+
+			return output;
+		}
+
+		protected void TriggerCallback(IGameObject testedObject, IList<IGameObject> colliders)
+		{
+			foreach (var callback in callbacks)
+			{
+				callback(testedObject, colliders);
+			}
 		}
 
 	}

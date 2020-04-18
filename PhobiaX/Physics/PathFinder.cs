@@ -8,11 +8,6 @@ namespace PhobiaX.Physics
 {
 	public class PathFinder
 	{
-		public PathFinder()
-		{
-
-		}
-
         public IGameObject FindClosestTarget(IGameObject objectSearchingPath, IList<IGameObject> targets)
         {
             var closestDistance = double.MaxValue;

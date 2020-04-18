@@ -1,4 +1,5 @@
-﻿using PhobiaX.Game.GameObjects;
+﻿using PhobiaX.Cleanups;
+using PhobiaX.Game.GameObjects;
 using PhobiaX.SDL2;
 using PhobiaX.SDL2.Options;
 using System;
@@ -6,12 +7,12 @@ using System.Collections.Generic;
 
 namespace PhobiaX.Graphics
 {
-	public class Renderer : IDisposable
+	public class Renderer : IDisposable, ICleanable
 	{
 		private readonly SDLRenderer renderer;
 		private readonly SDLTextureFactory textureFactory;
 		private SDLSurface screenSurface;
-		private IDictionary<string, IList<IGameObject>> gameObjects;
+		private IList<IGameObject> gameObjects;
 
 		public Renderer(SDLRenderer renderer, SDLTextureFactory textureFactory, SDLSurfaceFactory surfaceFactory, WindowOptions windowOptions)
 		{
@@ -19,30 +20,25 @@ namespace PhobiaX.Graphics
 			this.textureFactory = textureFactory ?? throw new ArgumentNullException(nameof(textureFactory));
 			screenSurface = surfaceFactory.CreateSurface(windowOptions.Width, windowOptions.Height);
 
-			gameObjects = new Dictionary<string, IList<IGameObject>>();
+			gameObjects = new List<IGameObject>();
 		}
 
-		public void SetForRendering(string name, IList<IGameObject> gameObjects)
+		public void Add(IGameObject gameObject)
 		{
-			if (!this.gameObjects.TryAdd(name, gameObjects))
-			{
-				this.gameObjects[name] = gameObjects;
-			}
+			this.gameObjects.Add(gameObject);
 		}
 
 		public void Dispose()
 		{
+			this.CleanupAll();
 			this.screenSurface.Dispose();
 		}
 
-		public void Render()
+		public void Evaluate()
 		{
-			foreach (var gameObjects in this.gameObjects.Values)
+			foreach (var gameObject in gameObjects)
 			{
-				foreach (var gameObject in gameObjects)
-				{
-					gameObject.Draw(screenSurface);
-				}
+				gameObject.Draw(screenSurface);
 			}
 
 			using (var texture = textureFactory.CreateTexture(screenSurface))
@@ -50,6 +46,16 @@ namespace PhobiaX.Graphics
 				texture.CopyToRenderer();
 				renderer.Present();
 			}
+		}
+
+		public void Cleanup(IGameObject gameObject)
+		{
+			this.gameObjects.Remove(gameObject);
+		}
+
+		public void CleanupAll()
+		{
+			this.gameObjects.Clear();
 		}
 	}
 }

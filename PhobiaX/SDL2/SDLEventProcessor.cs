@@ -21,7 +21,7 @@ namespace PhobiaX.SDL2
             eventsToActionsMap.Add(eventType, eventMethod);
         }
 
-        public void EvaluateEvents()
+        public void Evaluate()
         {
             SDL.SDL_Event e;
             while (sdl2.PollEvent(out e) != 0)

@@ -6,7 +6,7 @@ using System.Xml;
 
 namespace PhobiaX
 {
-
+    /*
     public struct Enviroment
     {
         private static int ResolutionX = 1024;
@@ -2933,4 +2933,5 @@ namespace PhobiaX
 
     }
     #endregion Pomocny tridy
+    */
 }

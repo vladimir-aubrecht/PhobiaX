@@ -9,23 +9,26 @@ namespace PhobiaX.Game.GameLoops
 {
 	public class GameLoop
 	{
-		private readonly PlayerGameObject player1GameObject;
+        private readonly TimeThrottler timeThrottler;
+        private readonly GameObjectFactory gameObjectFactory;
+        private readonly PlayerGameObject player1GameObject;
 		private readonly PlayerGameObject player2GameObject;
         private readonly GameUI gameUI;
 
         public ActionBinder ActionBinder { get; }
 		private SDLKeyboardStates KeyboardStates { get; }
 
-        public GameLoop(PlayerGameObject player1GameObject, PlayerGameObject player2GameObject, ActionBinder actionBinder, SDLKeyboardStates keyboardStates, GameUI gameUI)
+        public GameLoop(TimeThrottler timeThrottler, GameObjectFactory gameObjectFactory, PlayerGameObject player1GameObject, PlayerGameObject player2GameObject, ActionBinder actionBinder, SDLKeyboardStates keyboardStates, GameUI gameUI)
 		{
-			this.player1GameObject = player1GameObject ?? throw new ArgumentNullException(nameof(player1GameObject));
+            this.timeThrottler = timeThrottler ?? throw new ArgumentNullException(nameof(timeThrottler));
+            this.gameObjectFactory = gameObjectFactory ?? throw new ArgumentNullException(nameof(gameObjectFactory));
+            this.player1GameObject = player1GameObject ?? throw new ArgumentNullException(nameof(player1GameObject));
 			this.player2GameObject = player2GameObject ?? throw new ArgumentNullException(nameof(player2GameObject));
 			this.ActionBinder = actionBinder ?? throw new ArgumentNullException(nameof(actionBinder));
 			this.KeyboardStates = keyboardStates ?? throw new ArgumentNullException(nameof(keyboardStates));
             this.gameUI = gameUI ?? throw new ArgumentNullException(nameof(gameUI));
 
             InitKeyboardController();
-
         }
 
 		public PlayerGameObject GetPlayer1GameObject()
@@ -59,14 +62,14 @@ namespace PhobiaX.Game.GameLoops
             this.ActionBinder.RegisterPressAction(GameAction.Player1RotateLeft, () => player1GameObject.TurnLeft());
             this.ActionBinder.RegisterPressAction(GameAction.Player1RotateRight, () => player1GameObject.TurnRight());
             this.ActionBinder.RegisterPressAction(GameAction.Player1StopMoving, () => player1GameObject.Stop());
-            this.ActionBinder.RegisterPressAction(GameAction.Player1Fire, () => player1GameObject.Shoot());
+            this.ActionBinder.RegisterPressAction(GameAction.Player1Fire, () => timeThrottler.Execute(TimeSpan.FromMilliseconds(400), () => gameObjectFactory.CreateRocket(player1GameObject)));
 
             this.ActionBinder.RegisterPressAction(GameAction.Player2MoveForward, () => player2GameObject.MoveForward());
             this.ActionBinder.RegisterPressAction(GameAction.Player2MoveBackward, () => player2GameObject.MoveBackward());
             this.ActionBinder.RegisterPressAction(GameAction.Player2RotateLeft, () => player2GameObject.TurnLeft());
             this.ActionBinder.RegisterPressAction(GameAction.Player2RotateRight, () => player2GameObject.TurnRight());
             this.ActionBinder.RegisterPressAction(GameAction.Player2StopMoving, () => player2GameObject.Stop());
-            this.ActionBinder.RegisterPressAction(GameAction.Player2Fire, () => player2GameObject.Shoot());
+            this.ActionBinder.RegisterPressAction(GameAction.Player2Fire, () => timeThrottler.Execute(TimeSpan.FromMilliseconds(400), () => gameObjectFactory.CreateRocket(player2GameObject)));
         }
 
         public int GetDifficulty()

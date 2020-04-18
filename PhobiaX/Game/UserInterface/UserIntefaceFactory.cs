@@ -11,6 +11,7 @@ namespace PhobiaX.Game.UserInteface
 {
 	public class UserIntefaceFactory
 	{
+		private readonly GameObjectFactory gameObjectFactory;
 		private readonly AssetProvider assetProvider;
 		private readonly SDLSurfaceFactory surfaceFactory;
 		private readonly WindowOptions windowOptions;
@@ -24,8 +25,9 @@ namespace PhobiaX.Game.UserInteface
 		private IDictionary<char, SDLSurface> symbolMap;
 		private bool areGameUIAssetsLoaded;
 
-		public UserIntefaceFactory(AssetProvider assetProvider, SDLSurfaceFactory surfaceFactory, WindowOptions windowOptions)
+		public UserIntefaceFactory(GameObjectFactory gameObjectFactory, AssetProvider assetProvider, SDLSurfaceFactory surfaceFactory, WindowOptions windowOptions)
 		{
+			this.gameObjectFactory = gameObjectFactory ?? throw new ArgumentNullException(nameof(gameObjectFactory));
 			this.assetProvider = assetProvider ?? throw new ArgumentNullException(nameof(assetProvider));
 			this.surfaceFactory = surfaceFactory ?? throw new ArgumentNullException(nameof(surfaceFactory));
 			this.windowOptions = windowOptions ?? throw new ArgumentNullException(nameof(windowOptions));
@@ -37,15 +39,13 @@ namespace PhobiaX.Game.UserInteface
 			{
 				assetProvider.LoadSurfaces("AssetResources/UI/Bars", new SDLColor(255, 255, 255));
 				assetProvider.LoadSurfaces("AssetResources/UI/Symbols", new SDLColor(48, 255, 0), new SDLColor(49, 255, 0));
-				assetProvider.LoadSurfaces("AssetResources/Environments", new SDLColor(255, 255, 255));
 				areGameUIAssetsLoaded = true;
 			}
 
-			var mapSurface = assetProvider.GetSurfaces().GetSurface("environments_grass");
+			
 			var scoreBarSurface = assetProvider.GetSurfaces().GetSurface("bars_score");
 			var energyBarSurface = assetProvider.GetSurfaces().GetSurface("bars_energy");
 
-			var scaledMapSurface = surfaceFactory.CreateResizedSurface(mapSurface, windowOptions.Width);
 			var scaledScoreBarSurface = surfaceFactory.CreateResizedSurface(scoreBarSurface, windowOptions.Width / 6);
 			var scaledEnergyBarSurface = surfaceFactory.CreateResizedSurface(energyBarSurface, windowOptions.Width / 6);
 
@@ -54,7 +54,7 @@ namespace PhobiaX.Game.UserInteface
 			var maxWidth = windowOptions.Width / 22;
 			var energyBarX = windowOptions.Width - 5 - windowOptions.Width / 6;
 
-			map = new StaticGameObject(0, 0, scaledMapSurface);
+			map = gameObjectFactory.CreateMap();
 			scoreBar = new StaticGameObject(-2, -8, scaledScoreBarSurface);
 			energyBar = new StaticGameObject(energyBarX, -8, scaledEnergyBarSurface);
 
