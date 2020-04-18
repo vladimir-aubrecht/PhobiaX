@@ -85,11 +85,6 @@ namespace PhobiaX
             gameUI.SetPlayerScore(0, 0);
             gameUI.SetPlayerScore(1, 0);
 
-            foreach (var obj in gameUI.GetGameObjects())
-            {
-                renderer.Add(obj);
-            }
-
             gameLoop = gameLoopFactory.CreateGameLoop();
 
             gameLoop.ActionBinder.AssignKeysToGameAction(GameAction.Quit, false, SDL.SDL_Scancode.SDL_SCANCODE_Q);
@@ -136,7 +131,7 @@ namespace PhobiaX
 
                 if (gameObject is EnemyGameObject)
                 {
-               //     (gameObject as EnemyGameObject).Stop();
+                    (gameObject as EnemyGameObject).Stop();
                 }
             });
         }

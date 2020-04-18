@@ -12,26 +12,12 @@ namespace PhobiaX.Game.UserInterface
 		private readonly TextGameObject player1Energy;
 		private readonly TextGameObject player2Energy;
 
-		private readonly IList<IGameObject> gameObjects;
-
-		public GameUI(TextGameObject player1Score, TextGameObject player2Score, TextGameObject player1Energy, TextGameObject player2Energy, params IGameObject[] otherGraphics)
+		public GameUI(TextGameObject player1Score, TextGameObject player2Score, TextGameObject player1Energy, TextGameObject player2Energy)
 		{
 			this.player1Score = player1Score ?? throw new ArgumentNullException(nameof(player1Score));
 			this.player2Score = player2Score ?? throw new ArgumentNullException(nameof(player2Score));
 			this.player1Energy = player1Energy ?? throw new ArgumentNullException(nameof(player1Energy));
 			this.player2Energy = player2Energy ?? throw new ArgumentNullException(nameof(player2Energy));
-			_ = otherGraphics ?? throw new ArgumentNullException(nameof(otherGraphics));
-
-			gameObjects = new List<IGameObject>();
-			gameObjects.Add(player1Score);
-			gameObjects.Add(player2Score);
-			gameObjects.Add(player1Energy);
-			gameObjects.Add(player2Energy);
-
-			foreach (var graphic in otherGraphics)
-			{
-				gameObjects.Add(graphic);
-			}
 		}
 
 		public void SetPlayerScore(int index, int score)
@@ -56,11 +42,6 @@ namespace PhobiaX.Game.UserInterface
 			{
 				player2Energy.SetText($"P{index + 1} {life}");
 			}
-		}
-
-		public IList<IGameObject> GetGameObjects()
-		{
-			return gameObjects;
 		}
 	}
 }

@@ -15,15 +15,12 @@ namespace PhobiaX.Game.UserInteface
 		private readonly AssetProvider assetProvider;
 		private readonly SDLSurfaceFactory surfaceFactory;
 		private readonly WindowOptions windowOptions;
-		private StaticGameObject map;
 		private StaticGameObject scoreBar;
 		private StaticGameObject energyBar;
 		private TextGameObject scorePlayer1;
 		private TextGameObject energyPlayer1;
 		private TextGameObject scorePlayer2;
 		private TextGameObject energyPlayer2;
-		private IDictionary<char, SDLSurface> symbolMap;
-		private bool areGameUIAssetsLoaded;
 
 		public UserIntefaceFactory(GameObjectFactory gameObjectFactory, AssetProvider assetProvider, SDLSurfaceFactory surfaceFactory, WindowOptions windowOptions)
 		{
@@ -35,51 +32,24 @@ namespace PhobiaX.Game.UserInteface
 
 		public GameUI CreateGameUI()
 		{
-			if (!areGameUIAssetsLoaded)
-			{
-				assetProvider.LoadSurfaces("AssetResources/UI/Bars", new SDLColor(255, 255, 255));
-				assetProvider.LoadSurfaces("AssetResources/UI/Symbols", new SDLColor(48, 255, 0), new SDLColor(49, 255, 0));
-				areGameUIAssetsLoaded = true;
-			}
-
-			
 			var scoreBarSurface = assetProvider.GetSurfaces().GetSurface("bars_score");
-			var energyBarSurface = assetProvider.GetSurfaces().GetSurface("bars_energy");
 
 			var scaledScoreBarSurface = surfaceFactory.CreateResizedSurface(scoreBarSurface, windowOptions.Width / 6);
-			var scaledEnergyBarSurface = surfaceFactory.CreateResizedSurface(energyBarSurface, windowOptions.Width / 6);
-
-			symbolMap = CreateSymbolMap(assetProvider.GetSurfaces());
 
 			var maxWidth = windowOptions.Width / 22;
 			var energyBarX = windowOptions.Width - 5 - windowOptions.Width / 6;
 
-			map = gameObjectFactory.CreateMap();
-			scoreBar = new StaticGameObject(-2, -8, scaledScoreBarSurface);
-			energyBar = new StaticGameObject(energyBarX, -8, scaledEnergyBarSurface);
+			gameObjectFactory.CreateMap();
+			gameObjectFactory.CreateScoreBar(-2, -8);
+			gameObjectFactory.CreateLifeBar(energyBarX, -8);
 
-			scorePlayer1 = new TextGameObject(scaledScoreBarSurface.Surface.w - 55, 18, symbolMap, surfaceFactory, maxWidth);
-			energyPlayer1 = new TextGameObject(energyBarX, 20, symbolMap, surfaceFactory, maxWidth + 15);
+			scorePlayer1 = gameObjectFactory.CreateLabel(scaledScoreBarSurface.Surface.w - 55, 18, maxWidth);
+			energyPlayer1 = gameObjectFactory.CreateLabel(energyBarX, 20, maxWidth + 15);
 
-			scorePlayer2 = new TextGameObject(scaledScoreBarSurface.Surface.w - 55, 38, symbolMap, surfaceFactory, maxWidth);
-			energyPlayer2 = new TextGameObject(energyBarX, 40, symbolMap, surfaceFactory, maxWidth + 15);
+			scorePlayer2 = gameObjectFactory.CreateLabel(scaledScoreBarSurface.Surface.w - 55, 38, maxWidth);
+			energyPlayer2 = gameObjectFactory.CreateLabel(energyBarX, 40, maxWidth + 15);
 
-			return new GameUI(scorePlayer1, scorePlayer2, energyPlayer1, energyPlayer2, scoreBar, energyBar);
+			return new GameUI(scorePlayer1, scorePlayer2, energyPlayer1, energyPlayer2);
 		}
-
-		private static Dictionary<char, SDLSurface> CreateSymbolMap(SurfaceAssets surfaceAssets)
-		{
-			string symbols = "abcdefghijklmnopqrstuvwxyz0123456789";
-			var symbolMap = new Dictionary<char, SDLSurface>();
-
-			foreach (var symbol in symbols)
-			{
-				var surface = surfaceAssets.GetSurface($"symbols_{symbol}");
-				symbolMap.Add(symbol, surface);
-			}
-
-			return symbolMap;
-		}
-
 	}
 }

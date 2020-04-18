@@ -15,6 +15,9 @@ namespace PhobiaX
         private readonly AnimatedCollection playerAnimatedSet;
         private readonly AnimatedCollection effectsAnimatedSet;
         private readonly SDLSurface mapSurface;
+        private readonly SDLSurface scoreSurface;
+        private readonly SDLSurface lifeSurface;
+        private readonly SurfaceAssets symbolSurfaceAssets;
 
         private IList<Action<IGameObject>> callbacks = new List<Action<IGameObject>>();
 
@@ -28,11 +31,18 @@ namespace PhobiaX
             assetProvider.LoadAnimations("AssetResources/Player", "neutral", "death", false, new SDLColor(2, 65, 17), new SDLColor(2, 66, 17), new SDLColor(2, 66, 18));
             assetProvider.LoadAnimations("AssetResources/Effects", "rocket", "explosion", true, new SDLColor(2, 65, 17), new SDLColor(2, 66, 17), new SDLColor(2, 66, 18), new SDLColor(0, 112, 5), new SDLColor(0, 111, 5), new SDLColor(16, 107, 7), new SDLColor(5, 110, 6), new SDLColor(4, 110, 5), new SDLColor(21, 105, 7));
             assetProvider.LoadAnimations("AssetResources/Aliens", "neutral", "death", false, new SDLColor(0, 0, 255), new SDLColor(18, 18, 242));
-            
+            assetProvider.LoadSurfaces("AssetResources/UI/Symbols", new SDLColor(48, 255, 0), new SDLColor(49, 255, 0));
+            assetProvider.LoadSurfaces("AssetResources/UI/Bars", new SDLColor(255, 255, 255));
+
+            this.symbolSurfaceAssets = assetProvider.GetSurfaces();
             this.mapSurface = assetProvider.GetSurfaces().GetSurface("environments_grass");
             this.enemyAnimatedSet = assetProvider.GetAnimatedSurfaces()["aliens"];
             this.playerAnimatedSet = assetProvider.GetAnimatedSurfaces()["player"];
             this.effectsAnimatedSet = assetProvider.GetAnimatedSurfaces()["effects"];
+
+            scoreSurface = assetProvider.GetSurfaces().GetSurface("bars_score");
+            lifeSurface = assetProvider.GetSurfaces().GetSurface("bars_energy");
+
         }
 
         private void TriggerCallback(IGameObject gameObject)
@@ -51,6 +61,37 @@ namespace PhobiaX
         public void OnCreateCallback(Action<IGameObject> callback)
         {
             this.callbacks.Add(callback);
+        }
+
+        public StaticGameObject CreateScoreBar(int x, int y)
+        {
+            var scaledScoreBarSurface = surfaceFactory.CreateResizedSurface(scoreSurface, windowOptions.Width / 6);
+            var scoreBar = new StaticGameObject(x, y, scaledScoreBarSurface);
+
+            TriggerCallback(scoreBar);
+
+            return scoreBar;
+        }
+
+        public StaticGameObject CreateLifeBar(int x, int y)
+        {
+            var scaledLifeBarSurface = surfaceFactory.CreateResizedSurface(lifeSurface, windowOptions.Width / 6);
+            
+            var lifeBar = new StaticGameObject(x, y, scaledLifeBarSurface);
+
+            TriggerCallback(lifeBar);
+
+            return lifeBar;
+        }
+
+        public TextGameObject CreateLabel(int x, int y, int maxWidth)
+        {
+            var symbolMap = CreateSymbolMap(symbolSurfaceAssets);
+            var obj = new TextGameObject(x, y, symbolMap, surfaceFactory, maxWidth);
+
+            TriggerCallback(obj);
+
+            return obj;
         }
 
         public MapGameObject CreateMap()
@@ -97,6 +138,20 @@ namespace PhobiaX
             }
 
             return enemies;
+        }
+
+        private static Dictionary<char, SDLSurface> CreateSymbolMap(SurfaceAssets surfaceAssets)
+        {
+            string symbols = "abcdefghijklmnopqrstuvwxyz0123456789";
+            var symbolMap = new Dictionary<char, SDLSurface>();
+
+            foreach (var symbol in symbols)
+            {
+                var surface = surfaceAssets.GetSurface($"symbols_{symbol}");
+                symbolMap.Add(symbol, surface);
+            }
+
+            return symbolMap;
         }
     }
 }

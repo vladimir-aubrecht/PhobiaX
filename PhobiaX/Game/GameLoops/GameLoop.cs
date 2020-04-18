@@ -69,11 +69,6 @@ namespace PhobiaX.Game.GameLoops
         public void Evaluate()
         {
             this.KeyboardStates.ScanKeys();
-
-            /*gameUI.SetPlayer1Score(player1GameObject.Score);
-            gameUI.SetPlayer2Score(player2GameObject.Score);
-            gameUI.SetPlayer1Life(player1GameObject.Life);
-            gameUI.SetPlayer2Life(player2GameObject.Life);*/
         }
 
     }
