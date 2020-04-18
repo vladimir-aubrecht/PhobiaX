@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Transactions;
 using PhobiaX.Assets;
+using PhobiaX.Physics;
 using PhobiaX.SDL2;
 using SDL2;
 
@@ -37,8 +38,6 @@ namespace PhobiaX.Game.GameObjects
         private bool isStopped = true;
         public bool IsFinalAnimationFinished => isHit && (!AnimatedSet.IsFinalSetAnimation || AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrameIndex() == AnimatedSet.GetCurrentAnimatedAsset().GetAnimationFrames().Count - 1);
 
-
-        private DateTimeOffset lastMovement = DateTimeOffset.MinValue;
 
         public Action DestroyCallback { get; set; }
         public Action MoveCallback { get; set; }
@@ -75,12 +74,12 @@ namespace PhobiaX.Game.GameObjects
 
         public void TurnLeft()
         {
-            Angle = Modulo(Angle + minimalAngleStep, CircleDegrees);
+            Angle = MathFormulas.Modulo(Angle + minimalAngleStep, CircleDegrees);
         }
 
         public void TurnRight()
         {
-            Angle = Modulo(Angle - minimalAngleStep, CircleDegrees);
+            Angle = MathFormulas.Modulo(Angle - minimalAngleStep, CircleDegrees);
         }
 
         public void MoveForward()
@@ -101,8 +100,6 @@ namespace PhobiaX.Game.GameObjects
             {
                 AnimatedSet.GetCurrentAnimatedAsset().NextFrame();
                 isStopped = false;
-
-                lastMovement = DateTimeOffset.UtcNow;
             }
         }
 
@@ -124,8 +121,6 @@ namespace PhobiaX.Game.GameObjects
             {
                 AnimatedSet.GetCurrentAnimatedAsset().PreviousFrame();
                 isStopped = false;
-
-                lastMovement = DateTimeOffset.UtcNow;
             }
         }
 
@@ -152,7 +147,7 @@ namespace PhobiaX.Game.GameObjects
                 return false;
             }
 
-            Angle = CalculateAngleTowardsGameObject(this.X, this.Y, gameObject);
+            Angle = MathFormulas.CalculateAngleTowardsGameObject(X, Y, gameObject.X, gameObject.Y);
 
             MoveForward();
             return true;
@@ -204,45 +199,12 @@ namespace PhobiaX.Game.GameObjects
             objectSurface.BlitSurface(destination, ref surfaceRectangle);
         }
 
-        private static double CalculateAngleTowardsGameObject(int x, int y, IGameObject gameObject)
-        {
-            double xDiff = gameObject.X - x;
-            double yDiff = gameObject.Y - y;
-            double xDistance = Math.Abs(xDiff);
-            double yDistance = Math.Abs(yDiff);
-
-            var angle = Modulo(Math.Atan(yDistance / xDistance) * 180 / Math.PI, CircleDegrees);
-
-            // Left Down
-            if (xDiff < 0 && yDiff >= 0)
-            {
-                return 180 + angle;
-            }
-            // Right Down
-            else if (xDiff > 0 && yDiff > 0)
-            {
-                return 360 - angle;
-            }
-            // Left Up
-            else if (xDiff < 0 && yDiff <= 0)
-            {
-                return 180 - angle;
-            }
-            // Right Up
-            else if (xDiff > 0 && yDiff < 0)
-            {
-                return angle;
-            }
-
-            return 0;
-        }
-
         private int CalculateFrameIndexFromCurrentAngle()
         {
-            double animationAngle = Modulo(Angle - defaultAngleOffset, CircleDegrees);
+            double animationAngle = MathFormulas.Modulo(Angle - defaultAngleOffset, CircleDegrees);
             int amountOfAngles = AnimatedSet.GetDefaultAnimatedAsset().GetAnimationFrames().Count;
 
-            return (int)Modulo(Math.Ceiling(animationAngle * amountOfAngles / CircleDegrees), amountOfAngles);
+            return (int)MathFormulas.Modulo(Math.Ceiling(animationAngle * amountOfAngles / CircleDegrees), amountOfAngles);
         }
 
         private double CalculateNewAngleInRadiansFromFrameIndex()
@@ -250,12 +212,7 @@ namespace PhobiaX.Game.GameObjects
             var rotationFrameIndex = CalculateFrameIndexFromCurrentAngle();
             int amountOfAngles = AnimatedSet.GetDefaultAnimatedAsset().GetAnimationFrames().Count;
 
-            return (Math.PI / 180) * ((CircleDegrees / amountOfAngles) * (Modulo(rotationFrameIndex - amountOfAngles / 4, amountOfAngles)));
-        }
-
-        private static double Modulo(double x, double m)
-        {
-            return (x % m + m) % m;
+            return MathFormulas.ToRadians(((CircleDegrees / amountOfAngles) * (MathFormulas.Modulo(rotationFrameIndex - amountOfAngles / 4, amountOfAngles))));
         }
 
         public virtual void Hit()
