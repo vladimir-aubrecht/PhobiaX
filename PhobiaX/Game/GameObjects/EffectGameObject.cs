@@ -18,15 +18,5 @@ namespace PhobiaX.Game.GameObjects
             this.Y = owner.Y;
             this.Angle = owner.Angle;
         }
-
-        public override bool IsColliding(int x, int y, SDLSurface surface)
-        {
-            if (surface == Owner.CurrentSurface && x == Owner.X && y == Owner.Y)
-            {
-                return false;
-            }
-
-            return base.IsColliding(x, y, surface);
-        }
     }
 }

@@ -18,8 +18,29 @@ namespace PhobiaX.Game.GameObjects
         private const int defaultAngleOffset = 90;
 
         private double angle = defaultAngleOffset;
-        public int X { get; set; } = 0;
-        public int Y { get; set; } = 0;
+        public int X 
+        {
+            get
+            {
+                return this.ColladableObject.X;
+            }
+            set
+            {
+                this.ColladableObject.X = value;
+            }
+        }
+
+        public int Y 
+        { 
+            get 
+            { 
+                return this.ColladableObject.Y; 
+            } 
+            set 
+            { 
+                this.ColladableObject.Y = value; 
+            } 
+        }
 
         private int previousX = 0;
         private int previousY = 0;
@@ -157,25 +178,6 @@ namespace PhobiaX.Game.GameObjects
 
             MoveForward();
             return true;
-        }
-
-        public virtual bool IsColliding(int x, int y, SDLSurface surface)
-        {
-            if (surface == null)
-            {
-                return false;
-            }
-
-            var thisFrame = this.AnimatedSet.GetCurrentAnimatedAsset().GetCurrentFrame();
-
-            var surfaceWidth = surface.Surface.w;
-            var surfaceHeight = surface.Surface.h;
-
-            var isCollissionX = X + thisFrame.Surface.w >= x && X <= x + surfaceWidth;
-            var isCollissionY = Y + thisFrame.Surface.h >= y && Y <= y + surfaceHeight;
-            var isCollission = isCollissionX && isCollissionY;
-
-            return isCollission;
         }
 
         public bool IsColliding(IGameObject gameObject)
