@@ -4,20 +4,20 @@ using PhobiaX.SDL2;
 
 namespace PhobiaX.Assets
 {
-    public class AnimatedAsset : IDisposable
+    public class AnimatedSet : IDisposable
     {
         private readonly string setName;
         private IList<SDLSurface> surfaces = new List<SDLSurface>();
         private int currentFrame = 0;
 
-        public AnimatedAsset(AnimatedAsset animatedAsset)
+        public AnimatedSet(AnimatedSet animatedAsset)
         {
             this.setName = animatedAsset.setName;
             this.surfaces = animatedAsset.surfaces;
             this.currentFrame = animatedAsset.currentFrame;
         }
 
-        public AnimatedAsset(string setName, IList<SDLSurface> surfaces)
+        public AnimatedSet(string setName, IList<SDLSurface> surfaces)
         {
             this.setName = setName ?? throw new ArgumentNullException(nameof(setName));
             this.surfaces = surfaces ?? throw new ArgumentNullException(nameof(surfaces));

@@ -58,6 +58,8 @@ namespace PhobiaX
             gameGarbageObserver.AddCleanableObject(collissionObserver);
             gameGarbageObserver.AddCleanableObject(enemyAiObserver);
 
+            renderer.DestroyCallback = (gameObject) => gameGarbageObserver.Observe(gameObject);
+
             gameObjectFactory.OnCreateCallback((gameObject) => {
                 collissionObserver.ObserveCollission(gameObject);
                 renderer.Add(gameObject);
@@ -65,17 +67,11 @@ namespace PhobiaX
                 if (gameObject is EnemyGameObject)
                 {
                     enemyAiObserver.Observe(gameObject as EnemyGameObject);
-                    (gameObject as EnemyGameObject).DestroyCallback = () => gameGarbageObserver.Observe(gameObject);
                 }
 
                 if (gameObject is PlayerGameObject)
                 {
                     enemyAiObserver.AddTarget(gameObject);
-                }
-
-                if (gameObject is RocketGameObject)
-                {
-                    (gameObject as RocketGameObject).DestroyCallback = () => gameGarbageObserver.Observe(gameObject);
                 }
             });
 
@@ -99,22 +95,22 @@ namespace PhobiaX
                     }
                 }
 
-                colliders = colliders.Where(i => i.CanCollide).ToList();
-                if (!gameObject.CanCollide || !colliders.Any())
+                colliders = colliders.Where(i => i.ColladableObject != null).ToList();
+                if (gameObject.ColladableObject == null || !colliders.Any())
                 {
                     return;
                 }
 
                 if (gameObject is PlayerGameObject && colliders.OfType<EnemyGameObject>().Any())
                 {
-                    gameObject.Hit();
+                    (gameObject as PlayerGameObject).Hit();
 
                     var player = (gameObject as PlayerGameObject);
                     scoreUI.SetPlayerLife(player.PlayerNumber, player.Life);
                 }
                 else if (gameObject is EnemyGameObject && colliders.OfType<RocketGameObject>().Any())
                 {
-                    gameObject.Hit();
+                    (gameObject as EnemyGameObject).Hit();
 
                     foreach (var rocket in colliders.OfType<RocketGameObject>())
                     {
@@ -123,6 +119,14 @@ namespace PhobiaX
                         player.Score++;
                         scoreUI.SetPlayerScore(player.PlayerNumber, player.Score);
                         rocket.Hit();
+                    }
+                }
+
+                if (gameObject is RocketGameObject)
+                {
+                    if (gameObject.ColladableObject != null)
+                    {
+                        (gameObject as RocketGameObject).MoveForward();
                     }
                 }
 

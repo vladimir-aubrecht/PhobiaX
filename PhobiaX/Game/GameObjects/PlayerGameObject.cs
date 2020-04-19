@@ -16,7 +16,7 @@ namespace PhobiaX.Game.GameObjects
 		public int Score { get; set; } = 0;
 		public int Life { get; set; } = 100;
 
-		public PlayerGameObject(IRenderableObject renderableObject, ICollidableObject collidableObject, AnimatedCollection playerAnimatedSet, GameObjectFactory gameObjectFactory) : base(renderableObject, collidableObject, playerAnimatedSet, false)
+		public PlayerGameObject(RenderablePeriodicAnimation renderablePeriodicAnimation, ICollidableObject collidableObject) : base(renderablePeriodicAnimation, collidableObject)
 		{
 			playerGameObjectCount = (playerGameObjectCount + 1) % 2;
 		}

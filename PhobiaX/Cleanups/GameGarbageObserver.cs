@@ -47,7 +47,7 @@ namespace PhobiaX.Cleanups
 
 		public void Evaluate()
 		{
-			timeThrottler.Execute(TimeSpan.FromSeconds(1), () =>
+			timeThrottler.ExecuteThrottled("garbage cleanup", TimeSpan.FromSeconds(1), DateTimeOffset.MinValue, () =>
 			{
 				foreach (var obj in gameObjects)
 				{

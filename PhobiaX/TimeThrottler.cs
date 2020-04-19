@@ -6,24 +6,24 @@ namespace PhobiaX
 {
 	public class TimeThrottler
 	{
-		private IDictionary<Action, DateTimeOffset> lastDateTimeOffsets = new Dictionary<Action, DateTimeOffset>();
+		private IDictionary<string, DateTimeOffset> lastDateTimeOffsets = new Dictionary<string, DateTimeOffset>();
 
 		public TimeThrottler()
 		{
 
 		}
 
-		public void Execute(TimeSpan delay, Action method)
+		public void ExecuteThrottled(string key, TimeSpan delay, DateTimeOffset initialStartTime, Action method)
 		{
-			if (!lastDateTimeOffsets.ContainsKey(method))
+			if (!lastDateTimeOffsets.ContainsKey(key))
 			{
-				lastDateTimeOffsets.Add(method, DateTimeOffset.MinValue);
+				lastDateTimeOffsets.Add(key, initialStartTime);
 			}
 
-			if ((DateTimeOffset.UtcNow - lastDateTimeOffsets[method]).TotalMilliseconds > delay.TotalMilliseconds)
+			if ((DateTimeOffset.UtcNow - lastDateTimeOffsets[key]).TotalMilliseconds > delay.TotalMilliseconds)
 			{
 				method();
-				lastDateTimeOffsets[method] = DateTimeOffset.UtcNow;
+				lastDateTimeOffsets[key] = DateTimeOffset.UtcNow;
 			}
 		}
 	}

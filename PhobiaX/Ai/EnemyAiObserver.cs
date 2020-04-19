@@ -1,6 +1,7 @@
 ﻿using PhobiaX.Cleanups;
 using PhobiaX.Game.GameObjects;
 using PhobiaX.Physics;
+using PhobiaX.SDL2.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,15 +15,17 @@ namespace PhobiaX.Ai
 		private readonly CollissionObserver collissionObserver;
 		private readonly PathFinder pathFinder;
 		private readonly GameObjectFactory gameObjectFactory;
+		private readonly WindowOptions windowOptions;
 		private IList<EnemyGameObject> enemies = new List<EnemyGameObject>();
 		private IList<IGameObject> targets = new List<IGameObject>();
-		private int desiredAmountOfEnemies = 1;
+		private int desiredAmountOfEnemies = 4;
 
-		public EnemyAiObserver(CollissionObserver collissionObserver, PathFinder pathFinder, GameObjectFactory gameObjectFactory)
+		public EnemyAiObserver(CollissionObserver collissionObserver, PathFinder pathFinder, GameObjectFactory gameObjectFactory, WindowOptions windowOptions)
 		{
 			this.collissionObserver = collissionObserver ?? throw new ArgumentNullException(nameof(collissionObserver));
 			this.pathFinder = pathFinder ?? throw new ArgumentNullException(nameof(pathFinder));
 			this.gameObjectFactory = gameObjectFactory ?? throw new ArgumentNullException(nameof(gameObjectFactory));
+			this.windowOptions = windowOptions ?? throw new ArgumentNullException(nameof(windowOptions));
 		}
 
 		public void SetAmountOfEnemies(int amountOfEnemies)
@@ -58,7 +61,7 @@ namespace PhobiaX.Ai
 					continue;
 				}
 
-				if (TryMoveEnemyToClosestTarget(enemy))
+				if (enemy.ColladableObject != null && TryMoveEnemyToClosestTarget(enemy))
 				{
 					movesInTurn++;
 				}
@@ -67,7 +70,7 @@ namespace PhobiaX.Ai
 
 		private bool TryMoveEnemyToClosestTarget(EnemyGameObject enemy)
 		{
-			var validTargets = targets.Where(i => i.CanCollide).Cast<IGameObject>().ToList();
+			var validTargets = targets.Where(i => i.ColladableObject != null).Cast<IGameObject>().ToList();
 
 			if (!validTargets.Any())
 			{
@@ -81,7 +84,15 @@ namespace PhobiaX.Ai
 				return false;
 			}
 
-			enemy.TryMoveTowards(closesestTarget);
+			if (enemy.ColladableObject?.IsColliding(closesestTarget.ColladableObject) ?? false)
+			{
+				return false;
+			}
+
+			enemy.RenderablePeriodicAnimation.Angle = 
+				MathFormulas.GetAngleTowardsTarget(enemy.X, enemy.Y, closesestTarget.ColladableObject.X, closesestTarget.ColladableObject.Y);
+
+			enemy.MoveForward();
 
 			return true;
 		}
@@ -90,12 +101,22 @@ namespace PhobiaX.Ai
 		{
 			if (enemiesCount > this.enemies.Count)
 			{
-				foreach (var enemy in gameObjectFactory.CreateEnemies(enemiesCount - this.enemies.Count))
+				foreach (var enemy in gameObjectFactory.CreateEnemies(enemiesCount - this.enemies.Count + 1))
 				{
 					do
 					{
-						enemy.FindRandomStartLocation();
-					} while (collissionObserver.FindCollidingObjects(enemy).Where(i => i.CanCollide).Count() > 0);
+						if (enemy.ColladableObject == null)
+						{
+							continue;
+						}
+
+						(enemy.X, enemy.Y) = MathFormulas.GetRandomLocationAroundRectangle(
+							enemy.ColladableObject.Width,
+							enemy.ColladableObject.Height,
+							this.windowOptions.Width,
+							this.windowOptions.Height);
+
+					} while (collissionObserver.FindCollidingObjects(enemy).Where(i => i.ColladableObject != null).Count() > 0);
 				}
 			}
 		}

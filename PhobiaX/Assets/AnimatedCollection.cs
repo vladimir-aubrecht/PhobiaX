@@ -10,7 +10,7 @@ namespace PhobiaX.Assets
         private readonly string collectionName;
         private readonly string defaultSetName;
         private readonly string finalSetName;
-        private IDictionary<string, AnimatedAsset> animations = new Dictionary<string, AnimatedAsset>();
+        private IDictionary<string, AnimatedSet> animations = new Dictionary<string, AnimatedSet>();
         private int frameIndex = 0;
         private bool useOnlyDefaultSetCollection;
 
@@ -21,7 +21,7 @@ namespace PhobiaX.Assets
             this.collectionName = animatedSet.collectionName;
             this.defaultSetName = animatedSet.defaultSetName;
             this.finalSetName = animatedSet.finalSetName;
-            this.animations = animatedSet.animations.ToDictionary(k => k.Key, i => new AnimatedAsset(i.Value));
+            this.animations = animatedSet.animations.ToDictionary(k => k.Key, i => new AnimatedSet(i.Value));
             this.frameIndex = animatedSet.frameIndex;
             this.useOnlyDefaultSetCollection = animatedSet.useOnlyDefaultSetCollection;
             this.IsFinalSetAnimation = animatedSet.IsFinalSetAnimation;
@@ -42,7 +42,7 @@ namespace PhobiaX.Assets
 
         public void AddAnimation(string name, IList<SDLSurface> animation)
         {
-            animations.Add(name, new AnimatedAsset(name, animation));
+            animations.Add(name, new AnimatedSet(name, animation));
         }
 
         public void Dispose()
@@ -57,7 +57,7 @@ namespace PhobiaX.Assets
         {
             frameIndex++;
 
-            var currentSet = GetCurrentAnimatedAsset();
+            var currentSet = GetCurrentAnimatedSet();
 
             if (frameIndex >= currentSet.GetAnimationFrames().Count)
             {
@@ -71,7 +71,7 @@ namespace PhobiaX.Assets
         {
             frameIndex--;
 
-            var currentSet = GetCurrentAnimatedAsset();
+            var currentSet = GetCurrentAnimatedSet();
 
             if (frameIndex < 0)
             {
@@ -81,7 +81,7 @@ namespace PhobiaX.Assets
             currentSet.SetFrameIndex(frameIndex);
         }
 
-        public AnimatedAsset GetCurrentAnimatedAsset()
+        public AnimatedSet GetCurrentAnimatedSet()
         {
             var index = animations[defaultSetName].GetCurrentFrameIndex().ToString();
 
@@ -90,20 +90,20 @@ namespace PhobiaX.Assets
                 return animations[index];
             }
 
-            return GetDefaultAnimatedAsset();
+            return GetDefaultAnimatedSet();
         }
 
-        public AnimatedAsset GetDefaultAnimatedAsset()
+        public AnimatedSet GetDefaultAnimatedSet()
         {
             return animations[defaultSetName];
         }
 
-        public AnimatedAsset GetFinalAnimatedAsset()
+        public AnimatedSet GetFinalAnimatedSet()
         {
             return animations[finalSetName];
         }
 
-        public AnimatedAsset GetAnimatedAsset(string name)
+        public AnimatedSet GetAnimatedAsset(string name)
         {
             return animations[name];
         }

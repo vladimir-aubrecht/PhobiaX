@@ -6,6 +6,7 @@ namespace PhobiaX.Physics
 {
 	public static class MathFormulas
 	{
+        private static Random random = new Random();
         public const double CircleDegrees = 360;
 
         public static (double xIncrement, double yIncrement) GetIncrementByAngle(double speed, double angle)
@@ -45,6 +46,32 @@ namespace PhobiaX.Physics
             }
 
             return 0;
+        }
+
+        public static (int x, int y) GetRandomLocationAroundRectangle(int objectWidth, int objectHeight, int rectangleWidth, int rectangleHeight)
+        {
+            var minX = -random.Next(150) - objectWidth;
+            var minY = -random.Next(150) - objectHeight;
+            var maxX = random.Next(rectangleWidth);
+            var maxY = random.Next(rectangleHeight);
+
+            var rnd = random.Next(100);
+            if (rnd <= 25)
+            {
+                return (maxX, maxY);
+            }
+            else if (rnd > 25 && rnd <= 50)
+            {
+                return (minX, maxY);
+            }
+            else if (rnd > 50 && rnd <= 75)
+            {
+                return (rectangleWidth - minX, maxY);
+            }
+            else
+            {
+                return (maxX, rectangleHeight - minY);
+            }
         }
 
         public static double ToRadians(double degress)

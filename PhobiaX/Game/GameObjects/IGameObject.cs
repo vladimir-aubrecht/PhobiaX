@@ -15,19 +15,7 @@ namespace PhobiaX.Game.GameObjects
 
 		int Y { get; }
 
-		double Angle { get; }
-
-		public bool CanCollide { get; }
-
-		SDLSurface CurrentSurface { get; }
-
-		bool IsColliding(IGameObject gameObject);
-
-		public void Hit();
-
-		void Draw(SDLSurface destination);
-
-		IRenderableObject RenderableObject { get; }
-		ICollidableObject ColladableObject { get; }
+		IRenderableObject RenderableObject { get; set; }
+		ICollidableObject ColladableObject { get; set; }
 	}
 }

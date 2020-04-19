@@ -11,9 +11,9 @@ namespace PhobiaX.Graphics
 	{
 		private readonly SDLSurface surface;
 
-		public RenderableSurface(SDLSurface sDLSurface)
+		public RenderableSurface(SDLSurface surface)
 		{
-			this.surface = sDLSurface ?? throw new ArgumentNullException(nameof(sDLSurface));
+			this.surface = surface ?? throw new ArgumentNullException(nameof(surface));
 		}
 
 		public int X { get; set; }
@@ -23,6 +23,8 @@ namespace PhobiaX.Graphics
 		public int Width => surface.Surface.w;
 
 		public int Height => surface.Surface.h;
+
+		public bool ShouldDestroy => false;
 
 		public void Draw(SDLSurface destination)
 		{

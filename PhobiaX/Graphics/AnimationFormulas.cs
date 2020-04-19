@@ -16,7 +16,12 @@ namespace PhobiaX.Graphics
 		public static double GetAngleByIndex(int frameIndex, double angleOfFirstFrame, int framesCountInAnimation)
 		{
 			var angle = (MathFormulas.CircleDegrees / framesCountInAnimation) * frameIndex;
-			return MathFormulas.Modulo(angle - angleOfFirstFrame, MathFormulas.CircleDegrees);
+			return MathFormulas.Modulo(angle + angleOfFirstFrame, MathFormulas.CircleDegrees);
+		}
+
+		public static double GetAngleStep(int framesCountInAnimation)
+		{
+			return MathFormulas.CircleDegrees / framesCountInAnimation;
 		}
 	}
 }

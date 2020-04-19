@@ -19,14 +19,11 @@ namespace PhobiaX.Game.GameObjects
 		private readonly SDLSurfaceFactory surfaceFactory;
 		private readonly int maxWidth;
 
-		public IRenderableObject RenderableObject { get; }
+		public IRenderableObject RenderableObject { get; set; }
+		public ICollidableObject ColladableObject { get; set; }
 		public int X { get; }
 
 		public int Y { get; }
-
-		public double Angle { get; }
-
-		public bool CanCollide { get; } = false;
 
 		public TextGameObject(int x, int y, IDictionary<char, SDLSurface> symbolSurfaces, SDLSurfaceFactory surfaceFactory, int maxWidth)
 		{
@@ -39,19 +36,7 @@ namespace PhobiaX.Game.GameObjects
 			SetText("");
 		}
 
-		public SDLSurface CurrentSurface { get; private set; }
-
-		public ICollidableObject ColladableObject { get; } = null;
-
-		public void Draw(SDLSurface destination)
-		{
-			var surfaceRectangle = new SDL.SDL_Rect() { x = X, y = Y, w = CurrentSurface.Surface.w, h = CurrentSurface.Surface.h };
-			this.CurrentSurface.BlitSurface(destination, ref surfaceRectangle);
-		}
-
-		public void Hit() { }
-
-		public bool IsColliding(IGameObject gameObject) => false;
+		private SDLSurface CurrentSurface { get; set; }
 
 		public void SetText(string text)
 		{
@@ -92,6 +77,9 @@ namespace PhobiaX.Game.GameObjects
 
 				CurrentSurface?.Dispose();
 				CurrentSurface = surfaceFactory.CreateResizedSurface(textSurface, maxWidth);
+				this.RenderableObject = new RenderableSurface(CurrentSurface);
+				this.RenderableObject.X = this.X;
+				this.RenderableObject.Y = this.Y;
 			}
 		}
 	}

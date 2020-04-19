@@ -14,6 +14,8 @@ namespace PhobiaX.Graphics
 		private SDLSurface screenSurface;
 		private IList<IGameObject> gameObjects;
 
+		public Action<IGameObject> DestroyCallback { get; set; }
+
 		public Renderer(SDLRenderer renderer, SDLTextureFactory textureFactory, SDLSurfaceFactory surfaceFactory, WindowOptions windowOptions)
 		{
 			this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
@@ -38,8 +40,12 @@ namespace PhobiaX.Graphics
 		{
 			foreach (var gameObject in gameObjects)
 			{
+				if (gameObject.RenderableObject?.ShouldDestroy ?? false)
+				{
+					this.DestroyCallback?.Invoke(gameObject);
+				}
+
 				gameObject.RenderableObject?.Draw(screenSurface);
-				gameObject.Draw(screenSurface);
 			}
 
 			using (var texture = textureFactory.CreateTexture(screenSurface))

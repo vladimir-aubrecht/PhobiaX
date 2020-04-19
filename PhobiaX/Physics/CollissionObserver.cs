@@ -58,7 +58,7 @@ namespace PhobiaX.Physics
 					continue;
 				}
 
-				if (testedObject.IsColliding(gameObject))
+				if (testedObject.ColladableObject?.IsColliding(gameObject.ColladableObject) ?? false)
 				{
 					output.Add(gameObject);
 				}

@@ -13,6 +13,7 @@ namespace PhobiaX
 	{
         private readonly WindowOptions windowOptions;
         private readonly SDLSurfaceFactory surfaceFactory;
+        private readonly TimeThrottler timeThrottler;
         private readonly AnimatedCollection enemyAnimatedSet;
         private readonly AnimatedCollection playerAnimatedSet;
         private readonly AnimatedCollection effectsAnimatedSet;
@@ -20,13 +21,15 @@ namespace PhobiaX
         private readonly SDLSurface scoreSurface;
         private readonly SDLSurface lifeSurface;
         private readonly SurfaceAssets symbolSurfaceAssets;
+        private readonly double angleOfFirstFrame = 90;
 
         private IList<Action<IGameObject>> callbacks = new List<Action<IGameObject>>();
 
-        public GameObjectFactory(WindowOptions windowOptions, AssetProvider assetProvider, SDLSurfaceFactory surfaceFactory)
+        public GameObjectFactory(WindowOptions windowOptions, AssetProvider assetProvider, SDLSurfaceFactory surfaceFactory, TimeThrottler timeThrottler)
 		{
             this.windowOptions = windowOptions ?? throw new ArgumentNullException(nameof(windowOptions));
             this.surfaceFactory = surfaceFactory ?? throw new ArgumentNullException(nameof(surfaceFactory));
+            this.timeThrottler = timeThrottler ?? throw new ArgumentNullException(nameof(timeThrottler));
             _ = assetProvider ?? throw new ArgumentNullException(nameof(assetProvider));
 
             assetProvider.LoadSurfaces("AssetResources/Environments", new SDLColor(255, 255, 255));
@@ -105,10 +108,11 @@ namespace PhobiaX
             return map;
         }
 
-        public RocketGameObject CreateRocket(IGameObject owner)
+        public RocketGameObject CreateRocket(AnimatedGameObject owner)
         {
-            var surface = effectsAnimatedSet.GetDefaultAnimatedAsset().GetCurrentFrame().Surface;
-            var gameObject = new RocketGameObject(new RenderableAnimation(new AnimatedCollection(effectsAnimatedSet)), new CollidableObject(surface.w, surface.h), new AnimatedCollection(effectsAnimatedSet), owner);
+            var surface = effectsAnimatedSet.GetDefaultAnimatedSet().GetCurrentFrame().Surface;
+            var renderableObject = new RenderablePeriodicAnimation(new RenderableAnimation(this.timeThrottler, new AnimatedCollection(effectsAnimatedSet)), angleOfFirstFrame, true);
+            var gameObject = new RocketGameObject(renderableObject, new CollidableObject(surface.w, surface.h), owner);
             TriggerCallback(gameObject);
 
             return gameObject;
@@ -116,8 +120,9 @@ namespace PhobiaX
 
         public PlayerGameObject CreatePlayer(int x, int y)
         {
-            var surface = playerAnimatedSet.GetDefaultAnimatedAsset().GetCurrentFrame().Surface;
-            var gameObject = new PlayerGameObject(new RenderableAnimation(new AnimatedCollection(playerAnimatedSet)), new CollidableObject(surface.w, surface.h), new AnimatedCollection(playerAnimatedSet), this) { X = x, Y = y };
+            var surface = playerAnimatedSet.GetDefaultAnimatedSet().GetCurrentFrame().Surface;
+            var renderableObject = new RenderablePeriodicAnimation(new RenderableAnimation(this.timeThrottler, new AnimatedCollection(playerAnimatedSet)), angleOfFirstFrame, false);
+            var gameObject = new PlayerGameObject(renderableObject, new CollidableObject(surface.w, surface.h)) { X = x, Y = y };
             TriggerCallback(gameObject);
 
             return gameObject;
@@ -125,8 +130,9 @@ namespace PhobiaX
 
         public EnemyGameObject CreateEnemy()
         {
-            var surface = playerAnimatedSet.GetDefaultAnimatedAsset().GetCurrentFrame().Surface;
-            var enemy = new EnemyGameObject(new RenderableAnimation(new AnimatedCollection(enemyAnimatedSet)), new CollidableObject(surface.w, surface.h), new AnimatedCollection(enemyAnimatedSet), windowOptions);
+            var surface = playerAnimatedSet.GetDefaultAnimatedSet().GetCurrentFrame().Surface;
+            var renderableObject = new RenderablePeriodicAnimation(new RenderableAnimation(this.timeThrottler, new AnimatedCollection(enemyAnimatedSet)), angleOfFirstFrame, false);
+            var enemy = new EnemyGameObject(renderableObject, new CollidableObject(surface.w, surface.h));
 
             TriggerCallback(enemy);
 

@@ -8,29 +8,19 @@ using System.Text;
 
 namespace PhobiaX.Game.GameObjects
 {
-	public class RocketGameObject : EffectGameObject
+	public class RocketGameObject : AnimatedGameObject
 	{
-		public Action DestroyCallback { get; set; }
+		public IGameObject Owner { get; }
 
-		public RocketGameObject(IRenderableObject renderableObject, ICollidableObject collidableObject, AnimatedCollection animatedSet, IGameObject owner) : base(renderableObject, collidableObject, animatedSet, owner)
+		public RocketGameObject(RenderablePeriodicAnimation renderablePeriodicAnimation, ICollidableObject collidableObject, AnimatedGameObject owner) : base(renderablePeriodicAnimation, collidableObject)
 		{
+			this.Owner = owner ?? throw new ArgumentNullException(nameof(owner));
 			Speed = 12;
-		}
 
-		public override void Draw(SDLSurface destination)
-		{
-			if (CanCollide)
-			{
-				this.MoveForward();
-			}
+			this.X = owner.X;
+			this.Y = owner.Y;
+			this.RenderablePeriodicAnimation.Angle = owner.RenderablePeriodicAnimation.Angle;
 
-			base.Draw(destination);
-		}
-
-		public override void Hit()
-		{
-			base.Hit();
-			DestroyCallback();
 		}
 	}
 }

@@ -12,34 +12,15 @@ namespace PhobiaX.Game.GameObjects
 	public class StaticGameObject : IGameObject
 	{
 		public Guid Id { get; } = Guid.NewGuid();
-		public IRenderableObject RenderableObject { get; }
-		public ICollidableObject ColladableObject { get; }
+		public IRenderableObject RenderableObject { get; set; }
+		public ICollidableObject ColladableObject { get; set; }
 		public int X { get; }
 		public int Y { get; }
-		public double Angle { get; }
-		public SDLSurface CurrentSurface { get; }
-
-		public bool CanCollide { get; } = false;
 
 		public StaticGameObject(IRenderableObject renderableObject, ICollidableObject colladableObject)
 		{
 			RenderableObject = renderableObject;
 			ColladableObject = colladableObject;
-		}
-
-		public void Draw(SDLSurface destination)
-		{
-			this.RenderableObject.Draw(destination);
-		}
-
-		public bool IsColliding(IGameObject gameObject)
-		{
-			return this.ColladableObject?.IsColliding(gameObject.ColladableObject) ?? false;
-		}
-
-		public void Hit()
-		{
-			
 		}
 	}
 }

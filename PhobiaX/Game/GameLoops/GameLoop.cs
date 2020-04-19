@@ -54,14 +54,26 @@ namespace PhobiaX.Game.GameLoops
             this.ActionBinder.RegisterPressAction(GameAction.Player1RotateLeft, () => playerGameObjects[0].TurnLeft());
             this.ActionBinder.RegisterPressAction(GameAction.Player1RotateRight, () => playerGameObjects[0].TurnRight());
             this.ActionBinder.RegisterPressAction(GameAction.Player1StopMoving, () => playerGameObjects[0].Stop());
-            this.ActionBinder.RegisterPressAction(GameAction.Player1Fire, () => timeThrottler.Execute(TimeSpan.FromMilliseconds(400), () => gameObjectFactory.CreateRocket(playerGameObjects[0])));
+            this.ActionBinder.RegisterPressAction(GameAction.Player1Fire, () => timeThrottler.ExecuteThrottled("player 1 fire", TimeSpan.FromMilliseconds(400), DateTimeOffset.MinValue, () =>
+                {
+                    if (playerGameObjects[0].ColladableObject != null)
+                    {
+                        gameObjectFactory.CreateRocket(playerGameObjects[0]);
+                    }
+                }));
 
             this.ActionBinder.RegisterPressAction(GameAction.Player2MoveForward, () => playerGameObjects[1].MoveForward());
             this.ActionBinder.RegisterPressAction(GameAction.Player2MoveBackward, () => playerGameObjects[1].MoveBackward());
             this.ActionBinder.RegisterPressAction(GameAction.Player2RotateLeft, () => playerGameObjects[1].TurnLeft());
             this.ActionBinder.RegisterPressAction(GameAction.Player2RotateRight, () => playerGameObjects[1].TurnRight());
             this.ActionBinder.RegisterPressAction(GameAction.Player2StopMoving, () => playerGameObjects[1].Stop());
-            this.ActionBinder.RegisterPressAction(GameAction.Player2Fire, () => timeThrottler.Execute(TimeSpan.FromMilliseconds(400), () => gameObjectFactory.CreateRocket(playerGameObjects[1])));
+            this.ActionBinder.RegisterPressAction(GameAction.Player2Fire, () => timeThrottler.ExecuteThrottled("player 2 fire", TimeSpan.FromMilliseconds(400), DateTimeOffset.MinValue, () =>
+            {
+                if (playerGameObjects[0].ColladableObject != null)
+                {
+                    gameObjectFactory.CreateRocket(playerGameObjects[1]);
+                }
+            }));
         }
 
         private int GetDifficulty()

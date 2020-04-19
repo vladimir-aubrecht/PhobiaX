@@ -11,7 +11,6 @@ namespace PhobiaX.Game.GameObjects
 	{
 		public MapGameObject(IRenderableObject renderableObject, ICollidableObject collidableObjet) : base(renderableObject, collidableObjet)
 		{
-
 		}
 	}
 }
