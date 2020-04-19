@@ -1,0 +1,9 @@
+{
+  "surface": {
+    "maxWidth": 50
+  },
+  "collissions": {
+    "offsetX": 10,
+    "offsetY": 10
+  }
+}

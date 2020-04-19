@@ -10,22 +10,23 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.3" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.3" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.3" />
+        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
         <PackageReference Include="SDL2.Core" Version="2.2.0" />
     </ItemGroup>
     <ItemGroup>
-        <None Update="AssetResources\Aliens\**\*.bmp">
+        <None Update="AssetResources\Aliens\**\*.*">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-        <None Update="AssetResources\Effects\**\*.bmp">
+        <None Update="AssetResources\Effects\**\*.*">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-        <None Update="AssetResources\Environments\*.bmp">
+        <None Update="AssetResources\Environments\*.*">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-        <None Update="AssetResources\Player\**\*.bmp">
+        <None Update="AssetResources\Player\**\*.*">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-        <None Update="AssetResources\UI\**\*.bmp">
+        <None Update="AssetResources\UI\**\*.*">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
     </ItemGroup>

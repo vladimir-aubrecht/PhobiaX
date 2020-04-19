@@ -11,6 +11,8 @@ namespace PhobiaX.Graphics
 		int Height { get; }
 		bool ShouldDestroy { get; }
 
+		int RenderingPriority { get; set; }
+
 		void Draw(SDLSurface destination);
 	}
 }

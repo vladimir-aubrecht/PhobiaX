@@ -26,6 +26,8 @@ namespace PhobiaX.Graphics
 
 		public bool ShouldDestroy => false;
 
+		public int RenderingPriority { get; set; }
+
 		public void Draw(SDLSurface destination)
 		{
 			var surfaceRectangle = new SDL.SDL_Rect() { x = X, y = Y, w = Width, h = Height };

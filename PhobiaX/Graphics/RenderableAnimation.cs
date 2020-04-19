@@ -9,7 +9,7 @@ namespace PhobiaX.Graphics
 {
 	public class RenderableAnimation : IRenderableObject
 	{
-		private readonly TimeSpan animationSpeed = TimeSpan.FromMilliseconds(20);
+		private readonly TimeSpan animationSpeed = TimeSpan.FromMilliseconds(30);
 		private readonly TimeThrottler timeThrottler;
 		private readonly AnimatedCollection animatedCollection;
 		private AnimationSetType animationSetType = AnimationSetType.Default;
@@ -29,6 +29,8 @@ namespace PhobiaX.Graphics
 		public int Height { get; }
 
 		public bool ShouldDestroy { get; private set; }
+
+		public int RenderingPriority { get; set; }
 
 		public void ChangeSet(AnimationSetType animationSetType)
 		{

@@ -90,7 +90,7 @@ namespace PhobiaX.Ai
 			}
 
 			enemy.RenderablePeriodicAnimation.Angle = 
-				MathFormulas.GetAngleTowardsTarget(enemy.X, enemy.Y, closesestTarget.ColladableObject.X, closesestTarget.ColladableObject.Y);
+				MathFormulas.GetAngleTowardsTarget(enemy.X, enemy.Y, closesestTarget.ColladableObject.MiddleX, closesestTarget.ColladableObject.MiddleY);
 
 			enemy.MoveForward();
 

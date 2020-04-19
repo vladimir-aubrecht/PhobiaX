@@ -15,12 +15,12 @@ namespace PhobiaX.Game.GameObjects
 		public RocketGameObject(RenderablePeriodicAnimation renderablePeriodicAnimation, ICollidableObject collidableObject, AnimatedGameObject owner) : base(renderablePeriodicAnimation, collidableObject)
 		{
 			this.Owner = owner ?? throw new ArgumentNullException(nameof(owner));
-			Speed = 12;
 
-			this.X = owner.X;
-			this.Y = owner.Y;
+			this.X = owner.ColladableObject.MiddleX;
+			this.Y = owner.ColladableObject.MiddleY;
 			this.RenderablePeriodicAnimation.Angle = owner.RenderablePeriodicAnimation.Angle;
 
+			Speed = 12;
 		}
 	}
 }

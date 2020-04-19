@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using PhobiaX.Assets.Models;
 using PhobiaX.SDL2;
 
 namespace PhobiaX.Assets
@@ -40,9 +41,9 @@ namespace PhobiaX.Assets
             IsFinalSetAnimation = isFinalSetAnimation;
         }
 
-        public void AddAnimation(string name, IList<SDLSurface> animation)
+        public void AddAnimation(string name, Metadata metadata, IList<SDLSurface> animation)
         {
-            animations.Add(name, new AnimatedSet(name, animation));
+            animations.Add(name, new AnimatedSet(name, metadata, animation));
         }
 
         public void Dispose()

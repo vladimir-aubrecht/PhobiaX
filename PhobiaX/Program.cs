@@ -22,7 +22,7 @@ namespace PhobiaX
 {
     class Program
     {
-        private readonly TimeSpan renderingDelay = TimeSpan.FromMilliseconds(20);
+        private readonly TimeSpan renderingDelay = TimeSpan.FromMilliseconds(15);
         private readonly SDLApplication application;
         private readonly SDLEventProcessor eventProcessor;
         private readonly GameGarbageObserver gameGarbageObserver;

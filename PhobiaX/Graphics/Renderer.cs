@@ -12,7 +12,7 @@ namespace PhobiaX.Graphics
 		private readonly SDLRenderer renderer;
 		private readonly SDLTextureFactory textureFactory;
 		private SDLSurface screenSurface;
-		private IList<IGameObject> gameObjects;
+		private List<IGameObject> gameObjects;
 
 		public Action<IGameObject> DestroyCallback { get; set; }
 
@@ -38,6 +38,8 @@ namespace PhobiaX.Graphics
 
 		public void Evaluate()
 		{
+			gameObjects.Sort((a, b) => a.RenderableObject.RenderingPriority < b.RenderableObject.RenderingPriority ? -1 : 1);
+
 			foreach (var gameObject in gameObjects)
 			{
 				if (gameObject.RenderableObject?.ShouldDestroy ?? false)

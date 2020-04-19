@@ -1,4 +1,5 @@
 ﻿using PhobiaX.Assets;
+using PhobiaX.Assets.Models;
 using PhobiaX.Game.GameObjects;
 using PhobiaX.Graphics;
 using PhobiaX.Physics;
@@ -102,7 +103,8 @@ namespace PhobiaX
         public MapGameObject CreateMap()
         {
             var scaledMapSurface = surfaceFactory.CreateResizedSurface(mapSurface, windowOptions.Width);
-            var map = new MapGameObject(new RenderableSurface(scaledMapSurface), new CollidableObject(scaledMapSurface.Surface.w, scaledMapSurface.Surface.h));
+            var renderableObject = new RenderableSurface(scaledMapSurface) { RenderingPriority = 0 };
+            var map = new MapGameObject(renderableObject, new CollidableObject(scaledMapSurface.Surface.w, scaledMapSurface.Surface.h, new CollissionMetadata()));
             TriggerCallback(map);
 
             return map;
@@ -110,9 +112,12 @@ namespace PhobiaX
 
         public RocketGameObject CreateRocket(AnimatedGameObject owner)
         {
-            var surface = effectsAnimatedSet.GetDefaultAnimatedSet().GetCurrentFrame().Surface;
-            var renderableObject = new RenderablePeriodicAnimation(new RenderableAnimation(this.timeThrottler, new AnimatedCollection(effectsAnimatedSet)), angleOfFirstFrame, true);
-            var gameObject = new RocketGameObject(renderableObject, new CollidableObject(surface.w, surface.h), owner);
+            var animatedSet = effectsAnimatedSet.GetDefaultAnimatedSet();
+            var metadata = animatedSet.Metadata;
+            var surface = animatedSet.GetCurrentFrame().Surface;
+            var renderableObject = new RenderablePeriodicAnimation(new RenderableAnimation(this.timeThrottler, new AnimatedCollection(effectsAnimatedSet)), angleOfFirstFrame, true) { RenderingPriority = 30 };
+            var collidableObject = new CollidableObject(surface.w, surface.h, metadata.Collissions);
+            var gameObject = new RocketGameObject(renderableObject, collidableObject, owner);
             TriggerCallback(gameObject);
 
             return gameObject;
@@ -120,9 +125,12 @@ namespace PhobiaX
 
         public PlayerGameObject CreatePlayer(int x, int y)
         {
-            var surface = playerAnimatedSet.GetDefaultAnimatedSet().GetCurrentFrame().Surface;
-            var renderableObject = new RenderablePeriodicAnimation(new RenderableAnimation(this.timeThrottler, new AnimatedCollection(playerAnimatedSet)), angleOfFirstFrame, false);
-            var gameObject = new PlayerGameObject(renderableObject, new CollidableObject(surface.w, surface.h)) { X = x, Y = y };
+            var animatedSet = playerAnimatedSet.GetDefaultAnimatedSet();
+            var metadata = animatedSet.Metadata;
+            var surface = animatedSet.GetCurrentFrame().Surface;
+            var renderableObject = new RenderablePeriodicAnimation(new RenderableAnimation(this.timeThrottler, new AnimatedCollection(playerAnimatedSet)), angleOfFirstFrame, false) { RenderingPriority = 20 };
+            var collidableObject = new CollidableObject(surface.w, surface.h, metadata.Collissions);
+            var gameObject = new PlayerGameObject(renderableObject, collidableObject) { X = x, Y = y };
             TriggerCallback(gameObject);
 
             return gameObject;
@@ -130,9 +138,12 @@ namespace PhobiaX
 
         public EnemyGameObject CreateEnemy()
         {
-            var surface = playerAnimatedSet.GetDefaultAnimatedSet().GetCurrentFrame().Surface;
-            var renderableObject = new RenderablePeriodicAnimation(new RenderableAnimation(this.timeThrottler, new AnimatedCollection(enemyAnimatedSet)), angleOfFirstFrame, false);
-            var enemy = new EnemyGameObject(renderableObject, new CollidableObject(surface.w, surface.h));
+            var animatedSet = enemyAnimatedSet.GetDefaultAnimatedSet();
+            var metadata = animatedSet.Metadata;
+            var surface = animatedSet.GetCurrentFrame().Surface;
+            var renderableObject = new RenderablePeriodicAnimation(new RenderableAnimation(this.timeThrottler, new AnimatedCollection(enemyAnimatedSet)), angleOfFirstFrame, false) { RenderingPriority = 10 };
+            var collidableObject = new CollidableObject(surface.w, surface.h, metadata.Collissions);
+            var enemy = new EnemyGameObject(renderableObject, collidableObject);
 
             TriggerCallback(enemy);
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using PhobiaX.Assets.Models;
 using PhobiaX.SDL2;
 
 namespace PhobiaX.Assets
@@ -10,16 +11,20 @@ namespace PhobiaX.Assets
         private IList<SDLSurface> surfaces = new List<SDLSurface>();
         private int currentFrame = 0;
 
+        public Metadata Metadata { get; }
+
         public AnimatedSet(AnimatedSet animatedAsset)
         {
             this.setName = animatedAsset.setName;
             this.surfaces = animatedAsset.surfaces;
             this.currentFrame = animatedAsset.currentFrame;
+            this.Metadata = animatedAsset.Metadata;
         }
 
-        public AnimatedSet(string setName, IList<SDLSurface> surfaces)
+        public AnimatedSet(string setName, Metadata metadata, IList<SDLSurface> surfaces)
         {
             this.setName = setName ?? throw new ArgumentNullException(nameof(setName));
+            this.Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
             this.surfaces = surfaces ?? throw new ArgumentNullException(nameof(surfaces));
         }
 

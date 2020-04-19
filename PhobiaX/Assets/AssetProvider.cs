@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 using PhobiaX.Assets;
+using PhobiaX.Assets.Models;
 using PhobiaX.SDL2;
 
 namespace PhobiaX.Assets
@@ -30,6 +32,13 @@ namespace PhobiaX.Assets
 
         public void LoadAnimations(string resourcesPath, string defaultSetName, string finalSetName, bool isFinalSetAnimation, params SDLColor[] transparencyColors)
         {
+            var metadataFilesMap = new Dictionary<string, Metadata>();
+            foreach (var metadataFile in Directory.EnumerateFiles(resourcesPath, "*.json", SearchOption.AllDirectories))
+            {
+                var directoryPath = Path.GetDirectoryName(metadataFile);
+                metadataFilesMap.Add(Path.GetFullPath(directoryPath).ToLower(), LoadMetadata(metadataFile));
+            }
+
             var map = new Dictionary<string, List<string>>();
             foreach (var file in Directory.EnumerateFiles(resourcesPath, "*.bmp", SearchOption.AllDirectories))
             {
@@ -59,30 +68,55 @@ namespace PhobiaX.Assets
 
                 var surfaces = new List<SDLSurface>();
 
+                var folderName = Path.GetFileName(animationSet.Key).ToLower();
+                var metadataName = Path.Combine(Path.GetFullPath(resourcesPath).ToLower(), folderName);
+                Metadata metadata = null;
+                if (metadataFilesMap.TryGetValue(metadataName, out var foundMetadata))
+                {
+                    metadata = foundMetadata;
+                }
+
                 foreach (var animation in set)
                 {
                     var surface = surfaceFactory.LoadSurface(animation);
 
-                    SDLSurface filteredSurface = FilterOutTransparencyColors(transparencyColors, surface);
+                    var filteredSurface = FilterOutTransparencyColors(transparencyColors, surface);
+                    var resizedSurface = filteredSurface;
 
-                    filteredSurface.SetColorKey(SDLColor.Black);
-                    surfaces.Add(filteredSurface);
+                    if (metadata?.Surface != null)
+                    {
+                        resizedSurface = surfaceFactory.CreateResizedSurface(filteredSurface, metadata.Surface.MaxWidth);
+                        filteredSurface.Dispose();
+                    }
+
+                    resizedSurface.SetColorKey(SDLColor.Black);
+                    surfaces.Add(resizedSurface);
                 }
+
+                metadata = metadata ?? new Metadata();
 
                 var rootFolderName = Path.GetFileName(resourcesPath).ToLower();
                 var parentFolderName = Path.GetFileName(Directory.GetParent(animationSet.Key).FullName).ToLower();
-                var folderName = Path.GetFileName(animationSet.Key).ToLower();
 
                 if (animations.TryGetValue(parentFolderName, out var animatedAssets))
                 {
-                    animatedAssets.AddAnimation(folderName, surfaces);
+                    animatedAssets.AddAnimation(folderName, metadata, surfaces);
                 }
                 else
                 {
                     var animatedAsset = new AnimatedCollection(parentFolderName, defaultSetName, finalSetName, isFinalSetAnimation);
-                    animatedAsset.AddAnimation(folderName, surfaces);
+                    animatedAsset.AddAnimation(folderName, metadata, surfaces);
                     animations.Add(parentFolderName, animatedAsset);
                 }
+            }
+        }
+
+        private Metadata LoadMetadata(string filePath)
+        {
+            using (StreamReader r = new StreamReader(filePath))
+            {
+                string json = r.ReadToEnd();
+                return JsonConvert.DeserializeObject<Metadata>(json);
             }
         }
 

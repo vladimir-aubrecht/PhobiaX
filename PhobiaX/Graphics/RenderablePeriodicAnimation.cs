@@ -42,6 +42,8 @@ namespace PhobiaX.Graphics
 			}
 		}
 
+		public int RenderingPriority { get; set; }
+
 		public void NextAngle()
 		{
 			Angle = MathFormulas.Modulo(Angle + GetFrameAngleSize(), MathFormulas.CircleDegrees);
